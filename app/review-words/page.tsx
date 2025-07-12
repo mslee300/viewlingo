@@ -139,7 +139,7 @@ export default function ReviewWords() {
             )}
           </div>
         </div>
-        {wordData.map((section, i) => (
+        {wordData.map((section) => (
           <div key={section.date} style={{ marginBottom: 50 }}>
             <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 32 }}>{section.date}</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>

@@ -10,7 +10,7 @@ const handler = NextAuth({
   ],
   pages: {},
   callbacks: {
-    async redirect({ url, baseUrl }) {
+    async redirect() {
       return "/choose-language";
     },
   },
