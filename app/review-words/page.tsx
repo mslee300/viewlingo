@@ -1,7 +1,6 @@
 "use client";
 import Image from "next/image";
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
-import { useRouter } from "next/navigation";
 
 // Helper to format date as 'Jul 13 2025'
 function formatDate(dateStr: string) {
@@ -36,7 +35,6 @@ export default function ReviewWords() {
   const [loading, setLoading] = useState(true);
   const [flipped, setFlipped] = useState<Record<string, boolean[]>>({});
   const [newCardIds, setNewCardIds] = useState<Set<string>>(new Set());
-  const router = useRouter();
 
   useEffect(() => {
     console.log("useEffect running");
@@ -120,7 +118,7 @@ export default function ReviewWords() {
         setFlipped(newFlipped);
         // Mark all cards as not new on initial load
         const allIds = new Set<string>();
-        sorted.forEach(section => section.words.forEach((w: any) => allIds.add(w.id)));
+        sorted.forEach(section => section.words.forEach((w) => allIds.add((w as Record<string, unknown>).id as string)));
         setNewCardIds(new Set());
         setLoading(false);
       }
