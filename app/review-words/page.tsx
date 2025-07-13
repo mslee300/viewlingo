@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { useRouter } from "next/navigation";
 
 // Helper to format date as 'Jul 13 2025'
@@ -34,6 +34,8 @@ export default function ReviewWords() {
   const [modalOpen, setModalOpen] = useState(false);
   const [wordData, setWordData] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(true);
+  const [flipped, setFlipped] = useState<Record<string, boolean[]>>({});
+  const [newCardIds, setNewCardIds] = useState<Set<string>>(new Set());
   const router = useRouter();
 
   useEffect(() => {
@@ -101,8 +103,25 @@ export default function ReviewWords() {
         });
         const sorted = Object.entries(grouped)
           .sort((a, b) => new Date(b[0]).getTime() - new Date(a[0]).getTime())
-          .map(([date, words]) => ({ date, words }));
+          .map(([date, words]) => ({ 
+            date, 
+            words: (words as unknown[]).sort((a, b) => {
+              const aTime = new Date((a as Record<string, unknown>).timestamp as string).getTime();
+              const bTime = new Date((b as Record<string, unknown>).timestamp as string).getTime();
+              return bTime - aTime; // Latest first
+            })
+          }));
         setWordData(sorted);
+        // Initialize flipped state for each section
+        const newFlipped: Record<string, boolean[]> = {};
+        sorted.forEach(section => {
+          newFlipped[section.date] = Array(section.words.length).fill(false);
+        });
+        setFlipped(newFlipped);
+        // Mark all cards as not new on initial load
+        const allIds = new Set<string>();
+        sorted.forEach(section => section.words.forEach((w: any) => allIds.add(w.id)));
+        setNewCardIds(new Set());
         setLoading(false);
       }
       fetchWords().catch(e => console.error('fetchWords promise rejected', e));
@@ -110,6 +129,13 @@ export default function ReviewWords() {
       console.error('Unexpected error in useEffect:', err);
     }
   }, []);
+
+  // Remove highlight after 1s
+  useLayoutEffect(() => {
+    if (newCardIds.size === 0) return;
+    const timeout = setTimeout(() => setNewCardIds(new Set()), 1000);
+    return () => clearTimeout(timeout);
+  }, [newCardIds]);
 
   // Dropdown close logic (display only)
   useEffect(() => {
@@ -230,38 +256,144 @@ export default function ReviewWords() {
               >
                 {section.words.map((word, idx: number) => {
                   const w = word as Record<string, unknown>;
+                  const cardId = w.id as string;
+                  const isNew = newCardIds.has(cardId);
+                  // Card flip state for this card
+                  const isFlipped = flipped[section.date]?.[idx] || false;
                   return (
                     <div
                       key={idx}
                       style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        background: "#fff",
-                        borderRadius: 20,
-                        boxShadow: "0 4px 24px rgba(0,0,0,0.10)",
-                        padding: 0,
+                        perspective: 1200,
+                        width: "100%",
                         aspectRatio: "1 / 1",
                         minWidth: 0,
-                        width: "100%",
                         maxWidth: "100%",
                         cursor: "pointer",
+                        transition: 'background 1s',
+                        background: isNew ? '#ffe066' : undefined,
                       }}
-                      onClick={() => router.push("/review-cards")}
+                      onClick={() => {
+                        setFlipped(f => ({
+                          ...f,
+                          [section.date]: f[section.date]?.map((v, i) => i === idx ? !v : v)
+                        }));
+                      }}
                     >
-                      {w.picture ? (
-                        <Image
-                          src={`data:image/png;base64,${w.picture as string}`}
-                          alt={w.word as string}
-                          width={90}
-                          height={90}
-                          style={{ objectFit: "contain", marginTop: 18, marginBottom: 10 }}
-                        />
-                      ) : (
-                        <div style={{ width: 90, height: 90, marginTop: 18, marginBottom: 10, background: '#eee', borderRadius: 12 }} />
-                      )}
-                      <span style={{ fontSize: 16, fontWeight: 700, color: "#222", marginBottom: 18 }}>{w.word as string}</span>
+                      <div
+                        style={{
+                          position: "relative",
+                          width: "100%",
+                          height: "100%",
+                          borderRadius: 20,
+                          boxShadow: "0 4px 24px rgba(0,0,0,0.10)",
+                          background: "#fff",
+                          transition: "transform 0.7s cubic-bezier(.4,1,.4,1)",
+                          transformStyle: "preserve-3d",
+                          transform: isFlipped ? "rotateY(180deg)" : "none",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        {/* Front */}
+                        <div
+                          style={{
+                            position: "absolute",
+                            width: "100%",
+                            height: "100%",
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            backfaceVisibility: "hidden",
+                            borderRadius: 20,
+                            background: "#fff",
+                            zIndex: 2,
+                          }}
+                        >
+                          {w.picture ? (
+                            <Image
+                              src={`data:image/png;base64,${w.picture as string}`}
+                              alt={w.word as string}
+                              width={90}
+                              height={90}
+                              style={{ objectFit: "contain", marginTop: 18, marginBottom: 10 }}
+                            />
+                          ) : (
+                            <div style={{ width: 90, height: 90, marginTop: 18, marginBottom: 10, background: '#eee', borderRadius: 12 }} />
+                          )}
+                          <span
+                            style={{
+                              fontSize: (typeof w.word === 'string' && w.word.length > 12) ? 16 : 24,
+                              fontWeight: 700,
+                              color: "#222",
+                              marginBottom: 18
+                            }}
+                          >
+                            {w.word as string}
+                          </span>
+                        </div>
+                        {/* Back */}
+                        <div
+                          style={{
+                            position: "absolute",
+                            width: "100%",
+                            height: "100%",
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            backfaceVisibility: "hidden",
+                            borderRadius: 20,
+                            background: "#fff",
+                            transform: "rotateY(180deg)",
+                            zIndex: 1,
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: (typeof w.translation === 'string' && w.translation.length > 6) ? 16 : 24,
+                              fontWeight: 700,
+                              color: "#222",
+                              marginBottom: 8
+                            }}
+                          >
+                            {w.translation as string}
+                          </span>
+                          <span
+                            style={{
+                              fontSize: (typeof w.anglosax === 'string' && w.anglosax.length > 12) ? 14 : 20,
+                              fontWeight: 400,
+                              color: "#9D9D9D",
+                              marginBottom: 18
+                            }}
+                          >
+                            {w.anglosax as string}
+                          </span>
+                          <button
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                              background: "#000",
+                              color: "#fff",
+                              border: "none",
+                              borderRadius: 9999,
+                              padding: "7px 18px 7px 14px",
+                              fontSize: 16,
+                              fontWeight: 500,
+                              cursor: "pointer",
+                              marginBottom: 0,
+                            }}
+                            // onClick={() => {}}
+                            onClick={e => e.stopPropagation()}
+                          >
+                            <Image src="/speaker.svg" alt="Play" width={12} height={12} style={{ marginRight: 6 }} />
+                            <span style={{ fontWeight: 500, fontSize: 16 }}>Play</span>
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   );
                 })}

@@ -1,37 +1,118 @@
 "use client";
 import Image from "next/image";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 const TOTAL_CARDS = 5;
 
-const cardData = [
-  {
-    image: "/apple-photo.png",
-    answer: {
-      word: "苹果",
-      pronunciation: "Píngguǒ",
-      audio: "/audio/apple-zh.mp3", // Placeholder, not implemented
-    },
-  },
-  // ...repeat for demo, or add more cards
-];
+type WordData = {
+  id: string;
+  word: string;
+  translation: string;
+  anglosax: string;
+  picture: string;
+  timestamp: string;
+  language: string;
+};
 
 export default function ReviewCards() {
   const [cardIdx, setCardIdx] = useState(0); // 0-based
   const [flipped, setFlipped] = useState(false);
   const [swipeX, setSwipeX] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
+  const [cardData, setCardData] = useState<WordData[]>([]);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
   const swipeThreshold = 50;
 
-  // For demonstration, always show apple
-  const card = cardData[0];
+  // Fetch the latest 5 words
+  useEffect(() => {
+    async function fetchLatestWords() {
+      try {
+        // Get current date in UTC for API call
+        const now = new Date();
+        const today = new Date(now);
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        const dates = [
+          yesterday.toISOString().split('T')[0],
+          today.toISOString().split('T')[0]
+        ];
+        
+        let allWords: WordData[] = [];
+        
+        for (const date of dates) {
+          try {
+            const url = `https://5606daadd691.ngrok-free.app/words/full?date=${date}`;
+            const res = await fetch(url, {
+              headers: {
+                "ngrok-skip-browser-warning": "true",
+              },
+            });
+            
+            if (res.ok) {
+              const data = await res.json();
+              allWords = allWords.concat(data);
+            }
+          } catch (e) {
+            console.error('Network or fetch error', e);
+          }
+        }
+        
+        // Sort by timestamp (latest first) and take the latest 5
+        const sortedWords = allWords
+          .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+          .slice(0, TOTAL_CARDS);
+        
+        setCardData(sortedWords);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching words:', err);
+        setLoading(false);
+      }
+    }
+    
+    fetchLatestWords();
+  }, []);
+
+  // Get current card
+  const card = cardData[cardIdx];
 
   // Progress bar width (0 to 100%)
-  const progress = ((cardIdx + 1) / TOTAL_CARDS) * 100;
+  const progress = cardData.length > 0 ? ((cardIdx + 1) / TOTAL_CARDS) * 100 : 0;
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: "100vh",
+        background: "#fff",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}>
+        <div style={{ textAlign: "center" }}>Loading...</div>
+      </div>
+    );
+  }
+
+  // Show error state if no cards
+  if (cardData.length === 0) {
+    return (
+      <div style={{
+        minHeight: "100vh",
+        background: "#fff",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}>
+        <div style={{ textAlign: "center" }}>No cards available</div>
+      </div>
+    );
+  }
 
   // Swipe handlers
   function handleTouchStart(e: React.TouchEvent) {
@@ -182,8 +263,14 @@ export default function ReviewCards() {
                 transition: "opacity 0.3s, filter 0.3s",
               }}
             >
-              <Image src={card.image} alt={card.answer.word} width={150} height={150} style={{ objectFit: "contain", marginTop: 32, marginBottom: 24 }} />
-              <span style={{ fontSize: 28, fontWeight: 700, color: "#111", marginBottom: 32 }}>Apple</span>
+              <Image 
+                src={`data:image/png;base64,${card.picture}`} 
+                alt={card.word} 
+                width={150} 
+                height={150} 
+                style={{ objectFit: "contain", marginTop: 32, marginBottom: 24 }} 
+              />
+              <span style={{ fontSize: 28, fontWeight: 700, color: "#111", marginBottom: 32 }}>{card.word}</span>
             </div>
             {/* Back (Answer) */}
             <div
@@ -205,9 +292,15 @@ export default function ReviewCards() {
                 transition: "opacity 0.3s, filter 0.3s",
               }}
             >
-              <Image src={card.image} alt={card.answer.word} width={150} height={150} style={{ objectFit: "contain", marginTop: 32, marginBottom: 18 }} />
-              <span style={{ fontSize: 28, fontWeight: 700, color: "#111", marginBottom: 6 }}>{card.answer.word}</span>
-              <span style={{ fontSize: 20, fontWeight: 400, color: "#9D9D9D", marginBottom: 24, letterSpacing: 0.2 }}>{card.answer.pronunciation}</span>
+              <Image 
+                src={`data:image/png;base64,${card.picture}`} 
+                alt={card.word} 
+                width={150} 
+                height={150} 
+                style={{ objectFit: "contain", marginTop: 32, marginBottom: 18 }} 
+              />
+              <span style={{ fontSize: 28, fontWeight: 700, color: "#111", marginBottom: 6 }}>{card.translation}</span>
+              <span style={{ fontSize: 20, fontWeight: 400, color: "#9D9D9D", marginBottom: 24, letterSpacing: 0.2 }}>{card.anglosax}</span>
               <button
                 style={{
                   display: "flex",
