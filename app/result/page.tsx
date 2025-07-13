@@ -6,7 +6,8 @@ import Image from "next/image";
 function ResultContent() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<any[]>([]);
+  type Message = { role: string; text: string };
+  const [messages, setMessages] = useState<Message[]>([]);
   const [thinking, setThinking] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
