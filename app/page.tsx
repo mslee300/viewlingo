@@ -11,7 +11,7 @@ export default function Home() {
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        background: "#000",
+        background: "#fff",
         position: "relative",
       }}
     >
@@ -19,11 +19,21 @@ export default function Home() {
         <Image
           src="/logo-splash.svg"
           alt="ViewLingo logo"
-          width={200}
-          height={200}
+          width={100}
+          height={100}
           priority
-          style={{ marginBottom: 10 }}
         />
+        <div
+          style={{
+            color: "#111",
+            fontWeight: 500,
+            fontSize: 50,
+            textAlign: "center",
+            marginBottom: 8,
+          }}
+        >
+          ViewLingo
+        </div>
         <p
           style={{
             color: "#7B7B7B",
