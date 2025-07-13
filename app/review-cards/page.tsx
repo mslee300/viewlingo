@@ -17,10 +17,40 @@ type WordData = {
 
 // Helper to play audio from a Blob
 async function playAudioFromBlob(blob: Blob) {
-  const url = URL.createObjectURL(blob);
-  const audio = new Audio(url);
-  await audio.play();
-  URL.revokeObjectURL(url);
+  console.log('🔊 playAudioFromBlob called with blob:', blob);
+  console.log('🔊 Blob size:', blob.size, 'bytes');
+  console.log('🔊 Blob type:', blob.type);
+  
+  try {
+    const url = URL.createObjectURL(blob);
+    console.log('🔊 Created object URL:', url);
+    
+    const audio = new Audio(url);
+    console.log('🔊 Audio element created:', audio);
+    
+    // Add event listeners for debugging
+    audio.addEventListener('loadstart', () => console.log('🔊 Audio loadstart event'));
+    audio.addEventListener('loadedmetadata', () => console.log('🔊 Audio loadedmetadata event'));
+    audio.addEventListener('canplay', () => console.log('🔊 Audio canplay event'));
+    audio.addEventListener('canplaythrough', () => console.log('🔊 Audio canplaythrough event'));
+    audio.addEventListener('play', () => console.log('🔊 Audio play event'));
+    audio.addEventListener('playing', () => console.log('🔊 Audio playing event'));
+    audio.addEventListener('error', (e) => console.error('🔊 Audio error event:', e));
+    audio.addEventListener('abort', () => console.log('🔊 Audio abort event'));
+    
+    console.log('🔊 Attempting to play audio...');
+    await audio.play();
+    console.log('🔊 Audio play() resolved successfully');
+    
+    // Clean up URL after a delay to ensure audio has loaded
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+      console.log('🔊 Object URL revoked');
+    }, 1000);
+  } catch (error) {
+    console.error('🔊 Error in playAudioFromBlob:', error);
+    throw error;
+  }
 }
 
 export default function ReviewCards() {
@@ -44,50 +74,64 @@ export default function ReviewCards() {
     setStartTime(Date.now());
   }, []);
 
-  // Fetch the latest 5 words
+  // Fetch the latest 5 words from both languages and dates
   useEffect(() => {
     async function fetchLatestWords() {
       try {
-        // Get current date in UTC for API call
-        const now = new Date();
-        const today = new Date(now);
-        const yesterday = new Date(now);
-        yesterday.setDate(yesterday.getDate() - 1);
+        console.log('🃏 Starting to fetch words for review cards...');
         
-        const dates = [
-          yesterday.toISOString().split('T')[0],
-          today.toISOString().split('T')[0]
-        ];
+        // Use fixed dates as specified
+        const dates = ['2025-07-12', '2025-07-13'];
+        const languages = ['ko', 'zh']; // Korean and Mandarin
+        
+        console.log('🃏 Fetching dates:', dates);
+        console.log('🃏 Fetching languages:', languages);
         
         let allWords: WordData[] = [];
         
-        for (const date of dates) {
-          try {
-            const url = `https://surface-walls-handle-rows.trycloudflare.com/words/full?date=${date}`;
-            const res = await fetch(url, {
-              headers: {
-                "ngrok-skip-browser-warning": "true",
-              },
-            });
-            
-            if (res.ok) {
-              const data = await res.json();
-              allWords = allWords.concat(data);
+        // Fetch from both languages and both dates
+        for (const language of languages) {
+          for (const date of dates) {
+            try {
+              const url = `https://surface-walls-handle-rows.trycloudflare.com/words/by-language?language=${language}&date=${date}`;
+              console.log('🃏 Fetching from:', url);
+              
+              const res = await fetch(url, {
+                headers: {
+                  "ngrok-skip-browser-warning": "true",
+                },
+                mode: 'cors',
+              });
+              
+              console.log('🃏 Response status for', language, date, ':', res.status);
+              
+              if (res.ok) {
+                const data = await res.json();
+                console.log('🃏 Fetched', data.length, 'words for', language, date);
+                allWords = allWords.concat(data);
+              } else {
+                console.error('🃏 Fetch error for', language, date, ':', res.status);
+              }
+            } catch (e) {
+              console.error('🃏 Network or fetch error for', language, date, ':', e);
             }
-          } catch (e) {
-            console.error('Network or fetch error', e);
           }
         }
+        
+        console.log('🃏 Total words fetched:', allWords.length);
         
         // Sort by timestamp (latest first) and take the latest 5
         const sortedWords = allWords
           .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
           .slice(0, TOTAL_CARDS);
         
+        console.log('🃏 Selected', sortedWords.length, 'words for review cards');
+        console.log('🃏 Selected words:', sortedWords.map(w => ({ word: w.word, language: w.language, timestamp: w.timestamp })));
+        
         setCardData(sortedWords);
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching words:', err);
+        console.error('🃏 Error fetching words:', err);
         setLoading(false);
       }
     }
@@ -120,7 +164,7 @@ export default function ReviewCards() {
           fontSize: 24,
           fontWeight: 700,
           textAlign: 'center',
-        }}>Creating cards...</div>
+        }}>Creating review cards...</div>
       </div>
     );
   }
@@ -135,7 +179,7 @@ export default function ReviewCards() {
         alignItems: "center",
         justifyContent: "center",
       }}>
-        <div style={{ textAlign: "center" }}>No cards available</div>
+        <div style={{ textAlign: "center" }}>No review cards available for the selected dates</div>
       </div>
     );
   }
@@ -395,20 +439,58 @@ export default function ReviewCards() {
                 }}
                 onClick={async e => {
                   e.stopPropagation();
-                  if (isPlaying) return;
+                  console.log('🎵 TTS button clicked in review cards');
+                  console.log('🎵 Card data:', card);
+                  console.log('🎵 Translation text:', card.translation);
+                  
+                  if (isPlaying) {
+                    console.log('🎵 Already playing, ignoring click');
+                    return;
+                  }
+                  
                   setIsPlaying(true);
+                  console.log('🎵 Set playing state to true');
+                  
                   try {
+                    console.log('🎵 Making TTS API request...');
+                    const requestBody = { text: card.translation };
+                    console.log('🎵 Request body:', requestBody);
+                    
                     const res = await fetch('/api/tts', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ text: card.translation }),
+                      body: JSON.stringify(requestBody),
                     });
-                    if (!res.ok) throw new Error('TTS failed');
+                    
+                    console.log('🎵 TTS API response status:', res.status);
+                    console.log('🎵 TTS API response headers:', Object.fromEntries(res.headers.entries()));
+                    
+                    if (!res.ok) {
+                      const errorText = await res.text();
+                      console.error('🎵 TTS API error response:', errorText);
+                      throw new Error(`TTS failed with status ${res.status}: ${errorText}`);
+                    }
+                    
+                    console.log('🎵 TTS API request successful, getting blob...');
                     const blob = await res.blob();
+                    console.log('🎵 Received blob from TTS API:', blob);
+                    console.log('🎵 Blob size:', blob.size, 'bytes');
+                    console.log('🎵 Blob type:', blob.type);
+                    
+                    console.log('🎵 Calling playAudioFromBlob...');
                     await playAudioFromBlob(blob);
-                  } catch {
-                    alert('Failed to play audio');
+                    console.log('🎵 Audio playback completed successfully');
+                  } catch (error) {
+                    console.error('🎵 Error in TTS button click handler:', error);
+                    console.error('🎵 Error details:', {
+                      name: error instanceof Error ? error.name : 'Unknown',
+                      message: error instanceof Error ? error.message : String(error),
+                      stack: error instanceof Error ? error.stack : 'No stack trace'
+                    });
+                    const errorMessage = error instanceof Error ? error.message : String(error);
+                    alert(`Failed to play audio: ${errorMessage}`);
                   } finally {
+                    console.log('🎵 Clearing playing state');
                     setIsPlaying(false);
                   }
                 }}

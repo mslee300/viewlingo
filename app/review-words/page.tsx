@@ -5,24 +5,54 @@ import { useState, useRef, useEffect, useLayoutEffect } from "react";
 
 
 // Restore Language type and languages array
-type Language = { emoji: string; name: string };
+type Language = { emoji: string; name: string; code: string };
 const languages: Language[] = [
-  { emoji: "🇨🇳", name: "Mandarin" },
-  { emoji: "🇰🇷", name: "Korean" },
-  { emoji: "🇪🇸", name: "Spanish" },
-  { emoji: "🇫🇷", name: "French" },
-  { emoji: "🇩🇪", name: "German" },
-  { emoji: "🇯🇵", name: "Japanese" },
-  { emoji: "🇮🇹", name: "Italian" },
-  { emoji: "🇵🇹", name: "Portuguese" },
+  { emoji: "🇨🇳", name: "Mandarin", code: "zh" },
+  { emoji: "🇰🇷", name: "Korean", code: "ko" },
+  { emoji: "🇪🇸", name: "Spanish", code: "es" },
+  { emoji: "🇫🇷", name: "French", code: "fr" },
+  { emoji: "🇩🇪", name: "German", code: "de" },
+  { emoji: "🇯🇵", name: "Japanese", code: "ja" },
+  { emoji: "🇮🇹", name: "Italian", code: "it" },
+  { emoji: "🇵🇹", name: "Portuguese", code: "pt" },
 ];
 
 // Helper to play audio from a Blob
 async function playAudioFromBlob(blob: Blob) {
-  const url = URL.createObjectURL(blob);
-  const audio = new Audio(url);
-  await audio.play();
-  URL.revokeObjectURL(url);
+  console.log('🔊 playAudioFromBlob called with blob:', blob);
+  console.log('🔊 Blob size:', blob.size, 'bytes');
+  console.log('🔊 Blob type:', blob.type);
+  
+  try {
+    const url = URL.createObjectURL(blob);
+    console.log('🔊 Created object URL:', url);
+    
+    const audio = new Audio(url);
+    console.log('🔊 Audio element created:', audio);
+    
+    // Add event listeners for debugging
+    audio.addEventListener('loadstart', () => console.log('🔊 Audio loadstart event'));
+    audio.addEventListener('loadedmetadata', () => console.log('🔊 Audio loadedmetadata event'));
+    audio.addEventListener('canplay', () => console.log('🔊 Audio canplay event'));
+    audio.addEventListener('canplaythrough', () => console.log('🔊 Audio canplaythrough event'));
+    audio.addEventListener('play', () => console.log('🔊 Audio play event'));
+    audio.addEventListener('playing', () => console.log('🔊 Audio playing event'));
+    audio.addEventListener('error', (e) => console.error('🔊 Audio error event:', e));
+    audio.addEventListener('abort', () => console.log('🔊 Audio abort event'));
+    
+    console.log('🔊 Attempting to play audio...');
+    await audio.play();
+    console.log('🔊 Audio play() resolved successfully');
+    
+    // Clean up URL after a delay to ensure audio has loaded
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+      console.log('🔊 Object URL revoked');
+    }, 1000);
+  } catch (error) {
+    console.error('🔊 Error in playAudioFromBlob:', error);
+    throw error;
+  }
 }
 
 export default function ReviewWords() {
@@ -43,27 +73,15 @@ export default function ReviewWords() {
       async function fetchWords() {
         console.log("fetchWords called");
         
-        // Use specific timestamp as cutoff point
-        const cutoffTimestamp = '2025-07-13T17:55:18.204000';
-        const cutoffTime = new Date(cutoffTimestamp);
+        // Use fixed dates as specified
+        const dates = ['2025-07-12', '2025-07-13'];
         
-        // Get dates for API calls (last 2 days to ensure we get all data)
-        const now = new Date();
-        const today = new Date(now);
-        const yesterday = new Date(now);
-        yesterday.setDate(yesterday.getDate() - 1);
-        
-        const dates = [
-          yesterday.toISOString().split('T')[0], // YYYY-MM-DD format in UTC
-          today.toISOString().split('T')[0]
-        ];
-        
-        console.log('Fetching dates in UTC:', dates);
-        console.log('Cutoff timestamp:', cutoffTimestamp);
+        console.log('Fetching dates:', dates);
+        console.log('Selected language:', selectedLang.code);
         let allWords: unknown[] = [];
         for (const date of dates) {
           try {
-            const url = `https://surface-walls-handle-rows.trycloudflare.com/words/full?date=${date}`;
+            const url = `https://surface-walls-handle-rows.trycloudflare.com/words/by-language?language=${selectedLang.code}&date=${date}`;
             console.log('About to fetch:', url);
             const res = await fetch(url, {
               headers: {
@@ -91,15 +109,12 @@ export default function ReviewWords() {
             console.error('Network or fetch error', e);
           }
         }
-        // Group by "Today" (after cutoff) or "Yesterday" (before cutoff)
+        // Group by date
         const grouped: Record<string, unknown[]> = {};
         (allWords as unknown[]).forEach((word) => {
           const utcTimestamp = (word as Record<string, unknown>).timestamp as string;
           const wordTime = new Date(utcTimestamp);
-          
-          // Determine if word is from "Today" (after cutoff) or "Yesterday" (before cutoff)
-          const isToday = wordTime > cutoffTime;
-          const dateKey = isToday ? "Today" : "Yesterday";
+          const dateKey = wordTime.toISOString().split('T')[0] === '2025-07-13' ? "Today" : "Yesterday";
           
           if (!grouped[dateKey]) grouped[dateKey] = [];
           grouped[dateKey].push(word);
@@ -136,7 +151,7 @@ export default function ReviewWords() {
     } catch (err) {
       console.error('Unexpected error in useEffect:', err);
     }
-  }, []);
+  }, [selectedLang]);
 
   // Remove highlight after 1s
   useLayoutEffect(() => {
@@ -235,7 +250,7 @@ export default function ReviewWords() {
                       color: lang.name === selectedLang.name ? "#2193b0" : "#222",
                     }}
                     onClick={() => {
-                      if (lang.name === "Mandarin") {
+                      if (lang.name === "Mandarin" || lang.name === "Korean") {
                         setSelectedLang(lang);
                         setDropdownOpen(false);
                       } else {
@@ -262,9 +277,9 @@ export default function ReviewWords() {
             fontSize: 24,
             fontWeight: 700,
             textAlign: 'center',
-          }}>Getting words...</div>
+          }}>Getting {selectedLang.name} words...</div>
         ) : wordData.length === 0 ? (
-          <div style={{ textAlign: "center", margin: 40 }}>No words found for the last two days.</div>
+          <div style={{ textAlign: "center", margin: 40 }}>No {selectedLang.name} words found for the selected dates.</div>
         ) : (
           (wordData as { date: string; words: unknown[] }[]).map((section) => (
             <div key={section.date} style={{ marginBottom: 50 }}>
@@ -412,20 +427,58 @@ export default function ReviewWords() {
                             }}
                             onClick={async e => {
                               e.stopPropagation();
-                              if (isPlaying) return;
+                              console.log('🎵 TTS button clicked');
+                              console.log('🎵 Word data:', w);
+                              console.log('🎵 Translation text:', w.translation);
+                              
+                              if (isPlaying) {
+                                console.log('🎵 Already playing, ignoring click');
+                                return;
+                              }
+                              
                               setPlayingIdx({ date: section.date, idx });
+                              console.log('🎵 Set playing state for:', section.date, 'index:', idx);
+                              
                               try {
+                                console.log('🎵 Making TTS API request...');
+                                const requestBody = { text: w.translation };
+                                console.log('🎵 Request body:', requestBody);
+                                
                                 const res = await fetch('/api/tts', {
                                   method: 'POST',
                                   headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify({ text: w.translation }),
+                                  body: JSON.stringify(requestBody),
                                 });
-                                if (!res.ok) throw new Error('TTS failed');
+                                
+                                console.log('🎵 TTS API response status:', res.status);
+                                console.log('🎵 TTS API response headers:', Object.fromEntries(res.headers.entries()));
+                                
+                                if (!res.ok) {
+                                  const errorText = await res.text();
+                                  console.error('🎵 TTS API error response:', errorText);
+                                  throw new Error(`TTS failed with status ${res.status}: ${errorText}`);
+                                }
+                                
+                                console.log('🎵 TTS API request successful, getting blob...');
                                 const blob = await res.blob();
+                                console.log('🎵 Received blob from TTS API:', blob);
+                                console.log('🎵 Blob size:', blob.size, 'bytes');
+                                console.log('🎵 Blob type:', blob.type);
+                                
+                                console.log('🎵 Calling playAudioFromBlob...');
                                 await playAudioFromBlob(blob);
-                              } catch {
-                                alert('Failed to play audio');
+                                console.log('🎵 Audio playback completed successfully');
+                              } catch (error) {
+                                console.error('🎵 Error in TTS button click handler:', error);
+                                console.error('🎵 Error details:', {
+                                  name: error instanceof Error ? error.name : 'Unknown',
+                                  message: error instanceof Error ? error.message : String(error),
+                                  stack: error instanceof Error ? error.stack : 'No stack trace'
+                                });
+                                const errorMessage = error instanceof Error ? error.message : String(error);
+                                alert(`Failed to play audio: ${errorMessage}`);
                               } finally {
+                                console.log('🎵 Clearing playing state');
                                 setPlayingIdx(null);
                               }
                             }}
@@ -470,10 +523,50 @@ export default function ReviewWords() {
               fontWeight: 500,
               color: "#222",
               textAlign: "center",
+              maxWidth: 300,
             }}
             onClick={e => e.stopPropagation()}
           >
-            Coming soon..<br />Please choose Mandarin
+            <div style={{ marginBottom: 24, fontSize: 20, fontWeight: 600 }}>
+              Choose Language
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {languages.filter(lang => lang.name === "Mandarin" || lang.name === "Korean").map((lang) => (
+                <button
+                  key={lang.name}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    width: "100%",
+                    background: "none",
+                    border: "2px solid #eee",
+                    borderRadius: 12,
+                    fontSize: 16,
+                    fontWeight: 500,
+                    padding: "12px 16px",
+                    cursor: "pointer",
+                    color: "#222",
+                    transition: "all 0.2s",
+                  }}
+                  onClick={() => {
+                    setSelectedLang(lang);
+                    setModalOpen(false);
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = "#2193b0";
+                    e.currentTarget.style.background = "#f8f9fa";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = "#eee";
+                    e.currentTarget.style.background = "none";
+                  }}
+                >
+                  <span style={{ fontSize: 24 }}>{lang.emoji}</span>
+                  <span>{lang.name}</span>
+                </button>
+              ))}
+            </div>
             <div style={{ marginTop: 24 }}>
               <button
                 style={{
@@ -488,7 +581,7 @@ export default function ReviewWords() {
                 }}
                 onClick={() => setModalOpen(false)}
               >
-                OK
+                Cancel
               </button>
             </div>
           </div>
