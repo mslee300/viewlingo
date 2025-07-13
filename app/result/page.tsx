@@ -11,7 +11,9 @@ export default function Result() {
     if (!inputEl) return;
     function handleFocus() {
       setTimeout(() => {
-        inputEl.scrollIntoView({ behavior: "smooth", block: "end" });
+        if (inputEl) {
+          inputEl.scrollIntoView({ behavior: "smooth", block: "end" });
+        }
       }, 200);
     }
     inputEl.addEventListener("focus", handleFocus);
