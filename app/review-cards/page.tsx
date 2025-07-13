@@ -145,7 +145,7 @@ export default function ReviewCards() {
   function handleTouchEnd(e: React.TouchEvent) {
     if (touchStartX.current === null) return;
     const dx = e.changedTouches[0].clientX - touchStartX.current;
-    let nextGrading = [...grading];
+    const nextGrading = [...grading];
     if (Math.abs(dx) > swipeThreshold) {
       if (dx < 0) {
         // Mark as wrong, red border, do not go to previous card
