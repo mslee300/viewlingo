@@ -183,7 +183,13 @@ export default function ReviewCards() {
             const ss = elapsed % 60;
             const timeStr = `${mm}:${ss.toString().padStart(2, '0')}`;
             const correct = nextGrading.filter(x => x === "correct").length;
-            router.push(`/result?time=${encodeURIComponent(timeStr)}&correct=${correct}`);
+            // Collect graded results
+            const graded = cardData.map((c, i) => ({
+              word: c.word,
+              translation: c.translation,
+              result: nextGrading[i],
+            }));
+            router.push(`/result?time=${encodeURIComponent(timeStr)}&correct=${correct}&graded=${encodeURIComponent(JSON.stringify(graded))}`);
           }
         }, 200); // show border color briefly
       } else if (dx > 0) {
@@ -204,7 +210,13 @@ export default function ReviewCards() {
             const ss = elapsed % 60;
             const timeStr = `${mm}:${ss.toString().padStart(2, '0')}`;
             const correct = nextGrading.filter(x => x === "correct").length;
-            router.push(`/result?time=${encodeURIComponent(timeStr)}&correct=${correct}`);
+            // Collect graded results
+            const graded = cardData.map((c, i) => ({
+              word: c.word,
+              translation: c.translation,
+              result: nextGrading[i],
+            }));
+            router.push(`/result?time=${encodeURIComponent(timeStr)}&correct=${correct}&graded=${encodeURIComponent(JSON.stringify(graded))}`);
           }
         }, 200);
       }
