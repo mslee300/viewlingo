@@ -25,6 +25,14 @@ const languages: Language[] = [
   { emoji: "🇵🇹", name: "Portuguese" },
 ];
 
+// Helper to play audio from a Blob
+async function playAudioFromBlob(blob: Blob) {
+  const url = URL.createObjectURL(blob);
+  const audio = new Audio(url);
+  await audio.play();
+  URL.revokeObjectURL(url);
+}
+
 export default function ReviewWords() {
   console.log("Component mounted");
   const [selectedLang, setSelectedLang] = useState<Language>(languages[0]);
@@ -35,6 +43,7 @@ export default function ReviewWords() {
   const [loading, setLoading] = useState(true);
   const [flipped, setFlipped] = useState<Record<string, boolean[]>>({});
   const [newCardIds, setNewCardIds] = useState<Set<string>>(new Set());
+  const [playingIdx, setPlayingIdx] = useState<{date: string, idx: number} | null>(null);
 
   useEffect(() => {
     console.log("useEffect running");
@@ -267,6 +276,7 @@ export default function ReviewWords() {
                   const isNew = newCardIds.has(cardId);
                   // Card flip state for this card
                   const isFlipped = flipped[section.date]?.[idx] || false;
+                  const isPlaying = !!(playingIdx && playingIdx.date === section.date && playingIdx.idx === idx);
                   return (
                     <div
                       key={idx}
@@ -392,12 +402,31 @@ export default function ReviewWords() {
                               fontWeight: 500,
                               cursor: "pointer",
                               marginBottom: 0,
+                              opacity: isPlaying ? 0.6 : 1,
                             }}
-                            // onClick={() => {}}
-                            onClick={e => e.stopPropagation()}
+                            onClick={async e => {
+                              e.stopPropagation();
+                              if (isPlaying) return;
+                              setPlayingIdx({ date: section.date, idx });
+                              try {
+                                const res = await fetch('/api/tts', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ text: w.translation }),
+                                });
+                                if (!res.ok) throw new Error('TTS failed');
+                                const blob = await res.blob();
+                                await playAudioFromBlob(blob);
+                              } catch (err) {
+                                alert('Failed to play audio');
+                              } finally {
+                                setPlayingIdx(null);
+                              }
+                            }}
+                            disabled={isPlaying}
                           >
                             <Image src="/speaker.svg" alt="Play" width={12} height={12} style={{ marginRight: 6 }} />
-                            <span style={{ fontWeight: 500, fontSize: 16 }}>Play</span>
+                            <span style={{ fontWeight: 500, fontSize: 16 }}>{isPlaying ? 'Playing...' : 'Play'}</span>
                           </button>
                         </div>
                       </div>

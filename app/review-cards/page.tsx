@@ -15,6 +15,14 @@ type WordData = {
   language: string;
 };
 
+// Helper to play audio from a Blob
+async function playAudioFromBlob(blob: Blob) {
+  const url = URL.createObjectURL(blob);
+  const audio = new Audio(url);
+  await audio.play();
+  URL.revokeObjectURL(url);
+}
+
 export default function ReviewCards() {
   const [cardIdx, setCardIdx] = useState(0); // 0-based
   const [flipped, setFlipped] = useState(false);
@@ -25,6 +33,7 @@ export default function ReviewCards() {
   const [grading, setGrading] = useState<("correct"|"wrong"|null)[]>(Array(TOTAL_CARDS).fill(null));
   const [startTime, setStartTime] = useState<number|null>(null);
   const [borderColor, setBorderColor] = useState<string|null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
   const router = useRouter();
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
@@ -370,11 +379,31 @@ export default function ReviewCards() {
                   fontWeight: 500,
                   cursor: "pointer",
                   marginBottom: 0,
+                  opacity: isPlaying ? 0.6 : 1,
                 }}
-                // onClick={() => {}}
+                onClick={async e => {
+                  e.stopPropagation();
+                  if (isPlaying) return;
+                  setIsPlaying(true);
+                  try {
+                    const res = await fetch('/api/tts', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ text: card.translation }),
+                    });
+                    if (!res.ok) throw new Error('TTS failed');
+                    const blob = await res.blob();
+                    await playAudioFromBlob(blob);
+                  } catch (err) {
+                    alert('Failed to play audio');
+                  } finally {
+                    setIsPlaying(false);
+                  }
+                }}
+                disabled={isPlaying}
               >
                 <Image src="/speaker.svg" alt="Play" width={12} height={12} style={{ marginRight: 6 }} />
-                <span style={{ fontWeight: 500, fontSize: 16 }}>Play</span>
+                <span style={{ fontWeight: 500, fontSize: 16 }}>{isPlaying ? 'Playing...' : 'Play'}</span>
               </button>
             </div>
           </div>
