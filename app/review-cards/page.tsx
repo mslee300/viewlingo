@@ -102,7 +102,16 @@ export default function ReviewCards() {
         alignItems: "center",
         justifyContent: "center",
       }}>
-        <div style={{ textAlign: "center" }}>Loading...</div>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '50vh',
+          width: '100%',
+          fontSize: 24,
+          fontWeight: 700,
+          textAlign: 'center',
+        }}>Creating cards...</div>
       </div>
     );
   }
