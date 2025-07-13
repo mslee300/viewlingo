@@ -4,14 +4,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 const languages = [
-  { emoji: "🇨🇳", name: "Mandarin" },
-  { emoji: "🇰🇷", name: "Korean" },
-  { emoji: "🇪🇸", name: "Spanish" },
-  { emoji: "🇫🇷", name: "French" },
-  { emoji: "🇩🇪", name: "German" },
-  { emoji: "🇯🇵", name: "Japanese" },
-  { emoji: "🇮🇹", name: "Italian" },
-  { emoji: "🇵🇹", name: "Portuguese" },
+  { emoji: "🇨🇳", name: "Mandarin", code: "zh" },
+  { emoji: "🇰🇷", name: "Korean", code: "ko" },
+  { emoji: "🇪🇸", name: "Spanish", code: "es" },
+  { emoji: "🇫🇷", name: "French", code: "fr" },
+  { emoji: "🇩🇪", name: "German", code: "de" },
+  { emoji: "🇯🇵", name: "Japanese", code: "ja" },
+  { emoji: "🇮🇹", name: "Italian", code: "it" },
+  { emoji: "🇵🇹", name: "Portuguese", code: "pt" },
 ];
 
 export default function ChooseLanguage() {
@@ -19,8 +19,9 @@ export default function ChooseLanguage() {
   const router = useRouter();
 
   function handleClick(name: string) {
-    if (name === "Mandarin") {
-      router.push("/review-words");
+    const selectedLanguage = languages.find(lang => lang.name === name);
+    if (name === "Mandarin" || name === "Korean") {
+      router.push(`/review-words?lang=${selectedLanguage?.code}`);
     } else {
       setModalOpen(true);
     }

@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
+import { useSearchParams } from "next/navigation";
 
 
 
@@ -57,7 +58,13 @@ async function playAudioFromBlob(blob: Blob) {
 
 export default function ReviewWords() {
   console.log("Component mounted");
-  const [selectedLang, setSelectedLang] = useState<Language>(languages[0]);
+  const searchParams = useSearchParams();
+  const urlLang = searchParams.get('lang');
+  
+  // Set initial language based on URL parameter or default to Mandarin
+  const initialLanguage = urlLang ? languages.find(lang => lang.code === urlLang) || languages[0] : languages[0];
+  
+  const [selectedLang, setSelectedLang] = useState<Language>(initialLanguage);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [modalOpen, setModalOpen] = useState(false);
