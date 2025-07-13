@@ -1,15 +1,15 @@
 "use client";
 import { useEffect, useRef, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
+import Image from "next/image";
 
 function ResultContent() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState([
-    { role: "ai", text: "Great job!\nDo you have any question?" }
-  ]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [thinking, setThinking] = useState(false);
   const searchParams = useSearchParams();
+  const router = useRouter();
   const time = searchParams.get("time") || "0:00";
   const correct = parseInt(searchParams.get("correct") || "0", 10);
   const total = 5;
@@ -46,6 +46,28 @@ function ResultContent() {
       `${i + 1}. ${g.word} (${g.translation}) - ${g.result === 'correct' ? 'Correct' : g.result === 'wrong' ? 'Wrong' : 'Not graded'}`
     ).join('\n');
   }
+
+  // On mount, get AI recap as first message
+  useEffect(() => {
+    async function fetchRecap() {
+      setThinking(true);
+      setMessages([{ role: "ai", text: "Thinking..." }]);
+      const SYSTEM_PROMPT_TEMPLATE = `You are an expert Mandarin Chinese language coach with years of experience teaching Chinese to English speakers. You have a warm, encouraging, and patient teaching style that adapts to each student's learning pace and needs.\n\nCONTEXT: The user has just completed a Chinese word review session using flashcards and saw \"Great job! Do you have any questions?\" They practiced 5 specific Chinese characters/words and graded themselves on each one. They are now asking you a question about Chinese language learning.\n\nYOUR ROLE:\n- Provide clear, accurate explanations about Mandarin Chinese grammar, vocabulary, pronunciation, and culture\n- Use simple English explanations while incorporating Chinese characters (simplified), pinyin, and tone marks\n- Give practical examples and context for better understanding\n- Encourage continued learning and celebrate progress\n- Adapt your teaching style to the user's apparent level (beginner, intermediate, advanced)\n- Reference the specific characters they just studied when relevant to their question\n\nTEACHING APPROACH:\n- Break down complex concepts into digestible parts\n- Use memory techniques and mnemonics when helpful\n- Provide cultural context to make learning more meaningful\n- Offer multiple example sentences to illustrate usage\n- Suggest practice exercises or next steps when appropriate\n- Connect explanations to the words they just reviewed when applicable\n\nFORMATTING:\n- Use Chinese characters followed by pinyin with tone marks: 你好 (nǐ hǎo)\n- Include tone numbers when helpful: ni3 hao3\n- Bold key vocabulary or grammar points\n- Use bullet points for lists or steps\n\nTONE: Supportive, knowledgeable, and enthusiastic about helping the user improve their Mandarin skills.\n\nThe user's question relates to their Chinese language learning journey. Below are the 5 characters/words they just practiced with their self-graded performance:\n\n[CHARACTERS_AND_GRADES_WILL_BE_INSERTED_HERE]\n\nPlease respond helpfully and encouragingly, referencing their recent practice session when relevant to their question.`;
+      const gradedStr = gradedSummaryString(graded);
+      const systemPrompt = SYSTEM_PROMPT_TEMPLATE.replace('[CHARACTERS_AND_GRADES_WILL_BE_INSERTED_HERE]', gradedStr);
+      const recapPrompt = "Please give the user a friendly, VERY concise recap of what they got right and wrong in their review session above. End your message by asking if they have any additional questions.";
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: [{ role: "user", text: recapPrompt }], systemPrompt }),
+      });
+      const data = await res.json();
+      setMessages([{ role: "ai", text: data.output || "Great job! Do you have any questions?" }]);
+      setThinking(false);
+    }
+    fetchRecap();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Handle user input submit
   const handleSubmit = async (e: React.FormEvent) => {
@@ -117,7 +139,28 @@ function ResultContent() {
           borderRadius: 0,
           pointerEvents: "auto", // allow interaction
         }}>
-          <div style={{ textAlign: "center", fontSize: 18, fontWeight: 600, marginBottom: 24 }}>Result</div>
+          {/* Top Row: Back + Heading */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", position: "relative", marginBottom: 24 }}>
+            <button
+              style={{
+                position: "absolute",
+                left: 0,
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "none",
+                border: "none",
+                padding: 0,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+              }}
+              onClick={() => router.push("/review-words")}
+              aria-label="Go back"
+            >
+              <Image src="/back-arrow.svg" alt="Back" width={28} height={28} />
+            </button>
+            <span style={{ fontSize: 18, fontWeight: 600 }}>Result</span>
+          </div>
           {/* Score Card */}
           <div
             style={{
