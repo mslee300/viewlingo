@@ -16,23 +16,86 @@ const languages = [
   { emoji: "🇵🇹", name: "Portuguese" },
 ];
 
-const wordData = [
-  {
-    date: "Jul 13 2025",
-    words: ["Apple", "Apple"],
-  },
-  {
-    date: "Jul 12 2025",
-    words: ["Apple", "Apple", "Apple", "Apple"],
-  },
-];
+// Helper to format date as 'Jul 13 2025'
+function formatDate(dateStr: string) {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+// Helper to get YYYY-MM-DD string
+function getYMD(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
 
 export default function ReviewWords() {
+  console.log("Component mounted");
   const [selectedLang, setSelectedLang] = useState<Language>(languages[0]);
   const [modalOpen, setModalOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [wordData, setWordData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  // Fetch words for the last two days
+  useEffect(() => {
+    console.log("useEffect running");
+    try {
+      async function fetchWords() {
+        console.log("fetchWords called");
+        const dates = ['2025-07-12', '2025-07-13']; // Use known dates with data for debugging
+        let allWords: any[] = [];
+        for (const date of dates) {
+          try {
+            const url = `https://1f62a5b52290.ngrok-free.app/words/full?date=${date}`;
+            console.log('About to fetch:', url);
+            const res = await fetch(url, {
+              headers: {
+                'Accept': 'application/json',
+              },
+            });
+            console.log('Fetch completed for:', url);
+            const text = await res.text();
+            console.log('Raw response for', date, text.slice(0, 200)); // log first 200 chars
+            if (res.ok) {
+              let data;
+              try {
+                data = JSON.parse(text);
+              } catch (e) {
+                console.error('JSON parse error:', e, text.slice(0, 200));
+                continue;
+              }
+              console.log('Fetched for', date, data); // Debug log
+              allWords = allWords.concat(data);
+            } else {
+              console.error('Fetch error', res.status, text.slice(0, 200));
+            }
+          } catch (e) {
+            console.error('Network or fetch error', e);
+          }
+        }
+        // Group by date (format: 'Jul 13 2025')
+        const grouped: Record<string, any[]> = {};
+        allWords.forEach((word) => {
+          const dateKey = formatDate(word.timestamp);
+          if (!grouped[dateKey]) grouped[dateKey] = [];
+          grouped[dateKey].push(word);
+        });
+        const sorted = Object.entries(grouped)
+          .sort((a, b) => new Date(b[0]).getTime() - new Date(a[0]).getTime())
+          .map(([date, words]) => ({ date, words }));
+        setWordData(sorted);
+        setLoading(false);
+      }
+      fetchWords().catch(e => console.error('fetchWords promise rejected', e));
+    } catch (err) {
+      console.error('Unexpected error in useEffect:', err);
+    }
+  }, []);
 
   function handleLangSelect(lang: Language) {
     if (lang.name === "Mandarin" || lang.name === "Korean") {
@@ -81,107 +144,60 @@ export default function ReviewWords() {
         <div style={{ textAlign: "center", fontWeight: 600, fontSize: 18, marginBottom: 18 }}>
           Your words
         </div>
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
-          <div style={{ position: "relative" }} ref={dropdownRef}>
-            <button
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                background: "#fff",
-                border: "none",
-                borderRadius: 9999,
-                boxShadow: "0 2px 12px 0 rgba(0,0,0,0.08)",
-                fontSize: 16,
-                fontWeight: 500,
-                padding: "5px 16px 5px 16px",
-                cursor: "pointer",
-                minWidth: 120,
-              }}
-              onClick={() => setDropdownOpen((v) => !v)}
-            >
-              <span style={{ fontSize: 20 }}>{selectedLang.emoji}</span>
-              <span style={{ fontWeight: 500 }}>{selectedLang.name}</span>
-              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" style={{ marginLeft: 6 }}><path d="M6 8l4 4 4-4" stroke="#222" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            </button>
-            {dropdownOpen && (
+        {/* Remove language dropdown for now */}
+        {loading ? (
+          <div style={{ textAlign: "center", margin: 40 }}>Loading...</div>
+        ) : wordData.length === 0 ? (
+          <div style={{ textAlign: "center", margin: 40 }}>No words found for the last two days.</div>
+        ) : (
+          wordData.map((section) => (
+            <div key={section.date} style={{ marginBottom: 50 }}>
+              <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 32 }}>{section.date}</div>
               <div
                 style={{
-                  position: "absolute",
-                  top: "110%",
-                  left: 0,
-                  right: 0,
-                  background: "#fff",
-                  borderRadius: 16,
-                  boxShadow: "0 4px 24px rgba(0,0,0,0.10)",
-                  zIndex: 10,
-                  padding: 4,
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "clamp(10px, 4vw, 20px)",
                 }}
               >
-                {languages.map((lang) => (
-                  <button
-                    key={lang.name}
+                {section.words.map((word: any, idx: number) => (
+                  <div
+                    key={idx}
                     style={{
                       display: "flex",
+                      flexDirection: "column",
                       alignItems: "center",
-                      gap: 8,
+                      justifyContent: "center",
+                      background: "#fff",
+                      borderRadius: 20,
+                      boxShadow: "0 4px 24px rgba(0,0,0,0.10)",
+                      padding: 0,
+                      aspectRatio: "1 / 1",
+                      minWidth: 0,
                       width: "100%",
-                      background: "none",
-                      border: "none",
-                      borderRadius: 12,
-                      fontSize: 16,
-                      fontWeight: 500,
-                      padding: "10px 16px",
+                      maxWidth: "100%",
                       cursor: "pointer",
-                      color: lang.name === selectedLang.name ? "#2193b0" : "#222",
                     }}
-                    onClick={() => handleLangSelect(lang)}
+                    onClick={handleCardClick}
                   >
-                    <span style={{ fontSize: 20 }}>{lang.emoji}</span>
-                    <span>{lang.name}</span>
-                  </button>
+                    {word.picture ? (
+                      <Image
+                        src={`data:image/png;base64,${word.picture}`}
+                        alt={word.word}
+                        width={90}
+                        height={90}
+                        style={{ objectFit: "contain", marginTop: 18, marginBottom: 10 }}
+                      />
+                    ) : (
+                      <div style={{ width: 90, height: 90, marginTop: 18, marginBottom: 10, background: '#eee', borderRadius: 12 }} />
+                    )}
+                    <span style={{ fontSize: 16, fontWeight: 700, color: "#222", marginBottom: 18 }}>{word.word}</span>
+                  </div>
                 ))}
               </div>
-            )}
-          </div>
-        </div>
-        {wordData.map((section) => (
-          <div key={section.date} style={{ marginBottom: 50 }}>
-            <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 32 }}>{section.date}</div>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "clamp(10px, 4vw, 20px)",
-              }}
-            >
-              {section.words.map((word, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    background: "#fff",
-                    borderRadius: 20,
-                    boxShadow: "0 4px 24px rgba(0,0,0,0.10)",
-                    padding: 0,
-                    aspectRatio: "1 / 1",
-                    minWidth: 0,
-                    width: "100%",
-                    maxWidth: "100%",
-                    cursor: "pointer",
-                  }}
-                  onClick={handleCardClick}
-                >
-                  <Image src="/apple-photo.png" alt="Apple" width={90} height={90} style={{ objectFit: "contain", marginTop: 18, marginBottom: 10 }} />
-                  <span style={{ fontSize: 16, fontWeight: 700, color: "#222", marginBottom: 18 }}>{word}</span>
-                </div>
-              ))}
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
       {modalOpen && (
         <div
