@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const TOTAL_CARDS = 5;
 
@@ -65,6 +65,7 @@ export default function ReviewCards() {
   const [borderColor, setBorderColor] = useState<string|null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
   const swipeThreshold = 50;
@@ -74,47 +75,48 @@ export default function ReviewCards() {
     setStartTime(Date.now());
   }, []);
 
-  // Fetch the latest 5 words from both languages and dates
+  // Fetch the latest 5 words from the selected language and dates
   useEffect(() => {
     async function fetchLatestWords() {
       try {
         console.log('🃏 Starting to fetch words for review cards...');
         
+        // Get language from URL parameters, default to 'ko' if not specified
+        const language = searchParams.get('language') || 'ko';
+        console.log('🃏 Using language from URL:', language);
+        
         // Use fixed dates as specified
         const dates = ['2025-07-12', '2025-07-13'];
-        const languages = ['ko', 'zh']; // Korean and Mandarin
         
         console.log('🃏 Fetching dates:', dates);
-        console.log('🃏 Fetching languages:', languages);
+        console.log('🃏 Fetching language:', language);
         
         let allWords: WordData[] = [];
         
-        // Fetch from both languages and both dates
-        for (const language of languages) {
-          for (const date of dates) {
-            try {
-              const url = `https://surface-walls-handle-rows.trycloudflare.com/words/by-language?language=${language}&date=${date}`;
-              console.log('🃏 Fetching from:', url);
-              
-              const res = await fetch(url, {
-                headers: {
-                  "ngrok-skip-browser-warning": "true",
-                },
-                mode: 'cors',
-              });
-              
-              console.log('🃏 Response status for', language, date, ':', res.status);
-              
-              if (res.ok) {
-                const data = await res.json();
-                console.log('🃏 Fetched', data.length, 'words for', language, date);
-                allWords = allWords.concat(data);
-              } else {
-                console.error('🃏 Fetch error for', language, date, ':', res.status);
-              }
-            } catch (e) {
-              console.error('🃏 Network or fetch error for', language, date, ':', e);
+        // Fetch from the selected language and both dates
+        for (const date of dates) {
+          try {
+            const url = `https://surface-walls-handle-rows.trycloudflare.com/words/by-language?language=${language}&date=${date}`;
+            console.log('🃏 Fetching from:', url);
+            
+            const res = await fetch(url, {
+              headers: {
+                "ngrok-skip-browser-warning": "true",
+              },
+              mode: 'cors',
+            });
+            
+            console.log('🃏 Response status for', language, date, ':', res.status);
+            
+            if (res.ok) {
+              const data = await res.json();
+              console.log('🃏 Fetched', data.length, 'words for', language, date);
+              allWords = allWords.concat(data);
+            } else {
+              console.error('🃏 Fetch error for', language, date, ':', res.status);
             }
+          } catch (e) {
+            console.error('🃏 Network or fetch error for', language, date, ':', e);
           }
         }
         
@@ -137,7 +139,7 @@ export default function ReviewCards() {
     }
     
     fetchLatestWords();
-  }, []);
+  }, [searchParams]);
 
   // Get current card
   const card = cardData[cardIdx];

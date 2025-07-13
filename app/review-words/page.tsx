@@ -656,7 +656,7 @@ function ReviewWordsContent() {
               padding: "14px 0",
               cursor: "pointer",
             }}
-            onClick={() => { window.location.href = '/review-cards'; }}
+            onClick={() => { window.location.href = `/review-cards?language=${selectedLang.code}`; }}
           >
             <span style={{ fontSize: 20 }}>📝</span>
             <span>Review</span>
