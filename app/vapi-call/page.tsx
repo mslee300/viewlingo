@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
+import { VapiWidget } from '@vapi-ai/client-sdk-react';
+
 
 export default function VapiCallPage() {
   const [widgetReady, setWidgetReady] = useState(false);
@@ -66,7 +68,7 @@ export default function VapiCallPage() {
         }}
       >
         {widgetReady && (
-          <vapi-widget
+          <VapiWidget
             mode="voice"
             theme="dark"
             base-color="#000000"
@@ -84,7 +86,8 @@ export default function VapiCallPage() {
             show-transcript="true"
             public-key="4d5bf18f-1156-474e-86b7-0e50285bbaa1"
             assistant-id="196e5078-aaaa-417e-b240-6c92a5051f5c"
-          ></vapi-widget>
+            publicKey="4d5bf18f-1156-474e-86b7-0e50285bbaa1"
+          />
         )}
       </div>
     </div>
