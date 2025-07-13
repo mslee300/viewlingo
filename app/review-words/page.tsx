@@ -450,6 +450,75 @@ export default function ReviewWords() {
           </div>
         </div>
       )}
+      {/* Fixed bottom button bar */}
+      <div
+        style={{
+          position: "fixed",
+          left: 0,
+          right: 0,
+          bottom: 24,
+          display: "flex",
+          justifyContent: "center",
+          zIndex: 100,
+          pointerEvents: "none",
+        }}
+      >
+        <div
+          style={{
+            width: "100%",
+            maxWidth: 420,
+            display: "flex",
+            gap: 20,
+            padding: "0 24px",
+            pointerEvents: "auto",
+          }}
+        >
+          <button
+            style={{
+              flex: 1,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              background: "#fff",
+              color: "#222",
+              border: "none",
+              borderRadius: 24,
+              boxShadow: "0 2px 12px 0 rgba(0,0,0,0.10)",
+              fontSize: 18,
+              fontWeight: 500,
+              padding: "14px 0",
+              cursor: "pointer",
+            }}
+            // onClick={() => {}}
+          >
+            <span style={{ fontSize: 20 }}>📞</span>
+            <span>Call</span>
+          </button>
+          <button
+            style={{
+              flex: 1,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              background: "#111",
+              color: "#fff",
+              border: "none",
+              borderRadius: 24,
+              boxShadow: "0 2px 12px 0 rgba(0,0,0,0.10)",
+              fontSize: 18,
+              fontWeight: 500,
+              padding: "14px 0",
+              cursor: "pointer",
+            }}
+            onClick={() => { window.location.href = '/review-cards'; }}
+          >
+            <span style={{ fontSize: 20 }}>📝</span>
+            <span>Review</span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 } 
