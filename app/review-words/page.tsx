@@ -3,19 +3,6 @@ import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-type Language = { emoji: string; name: string };
-
-const languages = [
-  { emoji: "🇨🇳", name: "Mandarin" },
-  { emoji: "🇰🇷", name: "Korean" },
-  { emoji: "🇪🇸", name: "Spanish" },
-  { emoji: "🇫🇷", name: "French" },
-  { emoji: "🇩🇪", name: "German" },
-  { emoji: "🇯🇵", name: "Japanese" },
-  { emoji: "🇮🇹", name: "Italian" },
-  { emoji: "🇵🇹", name: "Portuguese" },
-];
-
 // Helper to format date as 'Jul 13 2025'
 function formatDate(dateStr: string) {
   const date = new Date(dateStr);
@@ -73,8 +60,8 @@ export default function ReviewWords() {
         }
         // Group by date (format: 'Jul 13 2025')
         const grouped: Record<string, unknown[]> = {};
-        (allWords as any[]).forEach((word) => {
-          const dateKey = formatDate((word as any).timestamp);
+        (allWords as unknown[]).forEach((word) => {
+          const dateKey = formatDate((word as Record<string, unknown>).timestamp as string);
           if (!grouped[dateKey]) grouped[dateKey] = [];
           grouped[dateKey].push(word);
         });
@@ -128,7 +115,7 @@ export default function ReviewWords() {
         ) : wordData.length === 0 ? (
           <div style={{ textAlign: "center", margin: 40 }}>No words found for the last two days.</div>
         ) : (
-          (wordData as any[]).map((section) => (
+          (wordData as { date: string; words: unknown[] }[]).map((section) => (
             <div key={section.date} style={{ marginBottom: 50 }}>
               <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 32 }}>{section.date}</div>
               <div
@@ -138,40 +125,43 @@ export default function ReviewWords() {
                   gap: "clamp(10px, 4vw, 20px)",
                 }}
               >
-                {(section.words as any[]).map((word, idx: number) => (
-                  <div
-                    key={idx}
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      background: "#fff",
-                      borderRadius: 20,
-                      boxShadow: "0 4px 24px rgba(0,0,0,0.10)",
-                      padding: 0,
-                      aspectRatio: "1 / 1",
-                      minWidth: 0,
-                      width: "100%",
-                      maxWidth: "100%",
-                      cursor: "pointer",
-                    }}
-                    onClick={() => router.push("/review-cards")}
-                  >
-                    {(word as any).picture ? (
-                      <Image
-                        src={`data:image/png;base64,${(word as any).picture}`}
-                        alt={(word as any).word}
-                        width={90}
-                        height={90}
-                        style={{ objectFit: "contain", marginTop: 18, marginBottom: 10 }}
-                      />
-                    ) : (
-                      <div style={{ width: 90, height: 90, marginTop: 18, marginBottom: 10, background: '#eee', borderRadius: 12 }} />
-                    )}
-                    <span style={{ fontSize: 16, fontWeight: 700, color: "#222", marginBottom: 18 }}>{(word as any).word}</span>
-                  </div>
-                ))}
+                {section.words.map((word, idx: number) => {
+                  const w = word as Record<string, unknown>;
+                  return (
+                    <div
+                      key={idx}
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background: "#fff",
+                        borderRadius: 20,
+                        boxShadow: "0 4px 24px rgba(0,0,0,0.10)",
+                        padding: 0,
+                        aspectRatio: "1 / 1",
+                        minWidth: 0,
+                        width: "100%",
+                        maxWidth: "100%",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => router.push("/review-cards")}
+                    >
+                      {w.picture ? (
+                        <Image
+                          src={`data:image/png;base64,${w.picture as string}`}
+                          alt={w.word as string}
+                          width={90}
+                          height={90}
+                          style={{ objectFit: "contain", marginTop: 18, marginBottom: 10 }}
+                        />
+                      ) : (
+                        <div style={{ width: 90, height: 90, marginTop: 18, marginBottom: 10, background: '#eee', borderRadius: 12 }} />
+                      )}
+                      <span style={{ fontSize: 16, fontWeight: 700, color: "#222", marginBottom: 18 }}>{w.word as string}</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           ))
