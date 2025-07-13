@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import { useState, useRef, useEffect, useLayoutEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
 
 
@@ -60,6 +60,7 @@ function ReviewWordsContent() {
   console.log("Component mounted");
   const searchParams = useSearchParams();
   const urlLang = searchParams.get('lang');
+  const router = useRouter();
   
   // Set initial language based on URL parameter or default to Mandarin
   const initialLanguage = urlLang ? languages.find(lang => lang.code === urlLang) || languages[0] : languages[0];
@@ -634,7 +635,7 @@ function ReviewWordsContent() {
               padding: "14px 0",
               cursor: "pointer",
             }}
-            // onClick={() => {}}
+            onClick={() => router.push('/vapi-call')}
           >
             <span style={{ fontSize: 20 }}>📞</span>
             <span>Call</span>

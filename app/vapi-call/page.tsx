@@ -1,0 +1,67 @@
+"use client";
+import { useEffect } from "react";
+
+export default function VapiCallPage() {
+  useEffect(() => {
+    // Dynamically load the Vapi widget script if not already present
+    if (!document.getElementById("vapi-widget-script")) {
+      const script = document.createElement("script");
+      script.src = "https://unpkg.com/@vapi-ai/client-sdk-react/dist/embed/widget.umd.js";
+      script.async = true;
+      script.type = "text/javascript";
+      script.id = "vapi-widget-script";
+      document.body.appendChild(script);
+    }
+  }, []);
+
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#000",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "flex-start",
+        padding: "0",
+        width: "100vw",
+        height: "100vh",
+        position: "fixed",
+        top: 0,
+        left: 0,
+        zIndex: 100,
+      }}
+    >
+      <button
+        onClick={() => window.history.back()}
+        style={{
+          position: "absolute",
+          top: 18,
+          left: 18,
+          background: "rgba(20,184,166,0.9)",
+          color: "#fff",
+          border: "none",
+          borderRadius: 9999,
+          padding: "10px 18px",
+          fontSize: 16,
+          fontWeight: 600,
+          zIndex: 101,
+          boxShadow: "0 2px 8px 0 rgba(0,0,0,0.10)",
+        }}
+        aria-label="Go back"
+      >
+        ← Back
+      </button>
+      <div
+        style={{
+          flex: 1,
+          width: "100vw",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+      </div>
+    </div>
+  );
+} 

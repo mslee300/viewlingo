@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@elevenlabs/elevenlabs-js": "^2.6.0",
+    "@vapi-ai/client-sdk-react": "^0.0.9",
     "dotenv": "^17.2.0",
     "next": "15.3.5",
     "next-auth": "^4.24.11",
