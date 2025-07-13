@@ -1,8 +1,8 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
-export default function Result() {
+function ResultContent() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [input, setInput] = useState("");
   const searchParams = useSearchParams();
@@ -112,5 +112,13 @@ export default function Result() {
         />
       </div>
     </div>
+  );
+}
+
+export default function Result() {
+  return (
+    <Suspense>
+      <ResultContent />
+    </Suspense>
   );
 } 
