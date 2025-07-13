@@ -26,29 +26,22 @@ function formatDate(dateStr: string) {
   });
 }
 
-// Helper to get YYYY-MM-DD string
-function getYMD(date: Date) {
-  return date.toISOString().slice(0, 10);
-}
-
 export default function ReviewWords() {
   console.log("Component mounted");
-  const [selectedLang, setSelectedLang] = useState<Language>(languages[0]);
   const [modalOpen, setModalOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [wordData, setWordData] = useState<any[]>([]);
+  const [wordData, setWordData] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  // Fetch words for the last two days
   useEffect(() => {
     console.log("useEffect running");
     try {
       async function fetchWords() {
         console.log("fetchWords called");
         const dates = ['2025-07-12', '2025-07-13']; // Use known dates with data for debugging
-        let allWords: any[] = [];
+        let allWords: unknown[] = [];
         for (const date of dates) {
           try {
             const url = `https://1f62a5b52290.ngrok-free.app/words/full?date=${date}`;
@@ -79,9 +72,9 @@ export default function ReviewWords() {
           }
         }
         // Group by date (format: 'Jul 13 2025')
-        const grouped: Record<string, any[]> = {};
-        allWords.forEach((word) => {
-          const dateKey = formatDate(word.timestamp);
+        const grouped: Record<string, unknown[]> = {};
+        (allWords as any[]).forEach((word) => {
+          const dateKey = formatDate((word as any).timestamp);
           if (!grouped[dateKey]) grouped[dateKey] = [];
           grouped[dateKey].push(word);
         });
@@ -96,16 +89,6 @@ export default function ReviewWords() {
       console.error('Unexpected error in useEffect:', err);
     }
   }, []);
-
-  function handleLangSelect(lang: Language) {
-    if (lang.name === "Mandarin" || lang.name === "Korean") {
-      setSelectedLang(lang);
-      setDropdownOpen(false);
-    } else {
-      setDropdownOpen(false);
-      setModalOpen(true);
-    }
-  }
 
   useEffect(() => {
     if (!dropdownOpen) return;
@@ -122,10 +105,6 @@ export default function ReviewWords() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [dropdownOpen]);
-
-  function handleCardClick() {
-    router.push("/review-cards");
-  }
 
   return (
     <div
@@ -144,13 +123,12 @@ export default function ReviewWords() {
         <div style={{ textAlign: "center", fontWeight: 600, fontSize: 18, marginBottom: 18 }}>
           Your words
         </div>
-        {/* Remove language dropdown for now */}
         {loading ? (
           <div style={{ textAlign: "center", margin: 40 }}>Loading...</div>
         ) : wordData.length === 0 ? (
           <div style={{ textAlign: "center", margin: 40 }}>No words found for the last two days.</div>
         ) : (
-          wordData.map((section) => (
+          (wordData as any[]).map((section) => (
             <div key={section.date} style={{ marginBottom: 50 }}>
               <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 32 }}>{section.date}</div>
               <div
@@ -160,7 +138,7 @@ export default function ReviewWords() {
                   gap: "clamp(10px, 4vw, 20px)",
                 }}
               >
-                {section.words.map((word: any, idx: number) => (
+                {(section.words as any[]).map((word, idx: number) => (
                   <div
                     key={idx}
                     style={{
@@ -178,12 +156,12 @@ export default function ReviewWords() {
                       maxWidth: "100%",
                       cursor: "pointer",
                     }}
-                    onClick={handleCardClick}
+                    onClick={() => router.push("/review-cards")}
                   >
-                    {word.picture ? (
+                    {(word as any).picture ? (
                       <Image
-                        src={`data:image/png;base64,${word.picture}`}
-                        alt={word.word}
+                        src={`data:image/png;base64,${(word as any).picture}`}
+                        alt={(word as any).word}
                         width={90}
                         height={90}
                         style={{ objectFit: "contain", marginTop: 18, marginBottom: 10 }}
@@ -191,7 +169,7 @@ export default function ReviewWords() {
                     ) : (
                       <div style={{ width: 90, height: 90, marginTop: 18, marginBottom: 10, background: '#eee', borderRadius: 12 }} />
                     )}
-                    <span style={{ fontSize: 16, fontWeight: 700, color: "#222", marginBottom: 18 }}>{word.word}</span>
+                    <span style={{ fontSize: 16, fontWeight: 700, color: "#222", marginBottom: 18 }}>{(word as any).word}</span>
                   </div>
                 ))}
               </div>
