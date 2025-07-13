@@ -53,9 +53,13 @@ export default function ReviewCards() {
     if (touchStartX.current === null) return;
     const dx = e.changedTouches[0].clientX - touchStartX.current;
     if (Math.abs(dx) > swipeThreshold) {
-      if (dx < 0 && cardIdx < TOTAL_CARDS - 1) {
-        setCardIdx(cardIdx + 1);
-        setFlipped(false);
+      if (dx < 0) {
+        if (cardIdx < TOTAL_CARDS - 1) {
+          setCardIdx(cardIdx + 1);
+          setFlipped(false);
+        } else if (cardIdx === TOTAL_CARDS - 1) {
+          router.push("/result");
+        }
       } else if (dx > 0 && cardIdx > 0) {
         setCardIdx(cardIdx - 1);
         setFlipped(false);
@@ -179,7 +183,7 @@ export default function ReviewCards() {
               }}
             >
               <Image src={card.image} alt={card.answer.word} width={150} height={150} style={{ objectFit: "contain", marginTop: 32, marginBottom: 24 }} />
-              <span style={{ fontSize: 28, fontWeight: 700, color: "#111", marginBottom: 32 }}>{card.answer.word}</span>
+              <span style={{ fontSize: 28, fontWeight: 700, color: "#111", marginBottom: 32 }}>Apple</span>
             </div>
             {/* Back (Answer) */}
             <div

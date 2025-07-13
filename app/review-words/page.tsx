@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 type Language = { emoji: string; name: string };
 
@@ -31,6 +32,7 @@ export default function ReviewWords() {
   const [modalOpen, setModalOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   function handleLangSelect(lang: Language) {
     if (lang.name === "Mandarin" || lang.name === "Korean") {
@@ -57,6 +59,10 @@ export default function ReviewWords() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [dropdownOpen]);
+
+  function handleCardClick() {
+    router.push("/review-cards");
+  }
 
   return (
     <div
@@ -165,7 +171,9 @@ export default function ReviewWords() {
                     minWidth: 0,
                     width: "100%",
                     maxWidth: "100%",
+                    cursor: "pointer",
                   }}
+                  onClick={handleCardClick}
                 >
                   <Image src="/apple-photo.png" alt="Apple" width={90} height={90} style={{ objectFit: "contain", marginTop: 18, marginBottom: 10 }} />
                   <span style={{ fontSize: 16, fontWeight: 700, color: "#222", marginBottom: 18 }}>{word}</span>
