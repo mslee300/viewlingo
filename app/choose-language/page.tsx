@@ -19,7 +19,7 @@ export default function ChooseLanguage() {
   const router = useRouter();
 
   function handleClick(name: string) {
-    if (name === "Mandarin" || name === "Korean") {
+    if (name === "Mandarin") {
       router.push("/review-words");
     } else {
       setModalOpen(true);
@@ -122,8 +122,7 @@ export default function ChooseLanguage() {
             }}
             onClick={e => e.stopPropagation()}
           >
-            Coming soon..<br />Please choose Mandarin or Korean
-            <div style={{ marginTop: 24 }}>
+            Coming soon..<br />Please choose Mandarin<div style={{ marginTop: 24 }}>
               <button
                 style={{
                   background: "#111",

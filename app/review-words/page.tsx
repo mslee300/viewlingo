@@ -235,8 +235,13 @@ export default function ReviewWords() {
                       color: lang.name === selectedLang.name ? "#2193b0" : "#222",
                     }}
                     onClick={() => {
-                      setSelectedLang(lang);
-                      setDropdownOpen(false);
+                      if (lang.name === "Mandarin") {
+                        setSelectedLang(lang);
+                        setDropdownOpen(false);
+                      } else {
+                        setModalOpen(true);
+                        setDropdownOpen(false);
+                      }
                     }}
                   >
                     <span style={{ fontSize: 20 }}>{lang.emoji}</span>
@@ -468,7 +473,7 @@ export default function ReviewWords() {
             }}
             onClick={e => e.stopPropagation()}
           >
-            Coming soon..<br />Please choose Mandarin or Korean
+            Coming soon..<br />Please choose Mandarin
             <div style={{ marginTop: 24 }}>
               <button
                 style={{
