@@ -51,7 +51,11 @@ export default function ReviewWords() {
       async function fetchWords() {
         console.log("fetchWords called");
         
-        // Get current date in UTC for API call
+        // Use specific timestamp as cutoff point
+        const cutoffTimestamp = '2025-07-13T17:55:18.204000';
+        const cutoffTime = new Date(cutoffTimestamp);
+        
+        // Get dates for API calls (last 2 days to ensure we get all data)
         const now = new Date();
         const today = new Date(now);
         const yesterday = new Date(now);
@@ -63,6 +67,7 @@ export default function ReviewWords() {
         ];
         
         console.log('Fetching dates in UTC:', dates);
+        console.log('Cutoff timestamp:', cutoffTimestamp);
         let allWords: unknown[] = [];
         for (const date of dates) {
           try {
@@ -94,22 +99,26 @@ export default function ReviewWords() {
             console.error('Network or fetch error', e);
           }
         }
-        // Group by date in PDT (format: 'Jul 13 2025')
+        // Group by "Today" (after cutoff) or "Yesterday" (before cutoff)
         const grouped: Record<string, unknown[]> = {};
         (allWords as unknown[]).forEach((word) => {
           const utcTimestamp = (word as Record<string, unknown>).timestamp as string;
+          const wordTime = new Date(utcTimestamp);
           
-          // Convert UTC timestamp to PDT
-          const utcDate = new Date(utcTimestamp);
-          const pdtOffset = -7 * 60; // PDT is UTC-7
-          const pdtDate = new Date(utcDate.getTime() + (pdtOffset * 60 * 1000));
+          // Determine if word is from "Today" (after cutoff) or "Yesterday" (before cutoff)
+          const isToday = wordTime > cutoffTime;
+          const dateKey = isToday ? "Today" : "Yesterday";
           
-          const dateKey = formatDate(pdtDate.toISOString());
           if (!grouped[dateKey]) grouped[dateKey] = [];
           grouped[dateKey].push(word);
         });
         const sorted = Object.entries(grouped)
-          .sort((a, b) => new Date(b[0]).getTime() - new Date(a[0]).getTime())
+          .sort((a, b) => {
+            // "Today" should come before "Yesterday"
+            if (a[0] === "Today" && b[0] === "Yesterday") return -1;
+            if (a[0] === "Yesterday" && b[0] === "Today") return 1;
+            return 0;
+          })
           .map(([date, words]) => ({ 
             date, 
             words: (words as unknown[]).sort((a, b) => {
@@ -256,7 +265,7 @@ export default function ReviewWords() {
             fontSize: 24,
             fontWeight: 700,
             textAlign: 'center',
-          }}>Fetching words...</div>
+          }}>Getting words...</div>
         ) : wordData.length === 0 ? (
           <div style={{ textAlign: "center", margin: 40 }}>No words found for the last two days.</div>
         ) : (
