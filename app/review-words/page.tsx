@@ -2,15 +2,7 @@
 import Image from "next/image";
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
 
-// Helper to format date as 'Jul 13 2025'
-function formatDate(dateStr: string) {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
+
 
 // Restore Language type and languages array
 type Language = { emoji: string; name: string };
