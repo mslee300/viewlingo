@@ -1,6 +1,14 @@
 "use client";
+import { useEffect } from "react";
 
 export default function FetchingWords() {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      window.location.href = "/review-words";
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div
       style={{

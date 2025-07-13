@@ -142,22 +142,33 @@ export default function ReviewWords() {
         {wordData.map((section) => (
           <div key={section.date} style={{ marginBottom: 50 }}>
             <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 32 }}>{section.date}</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "clamp(10px, 4vw, 20px)",
+              }}
+            >
               {section.words.map((word, idx) => (
                 <div
                   key={idx}
                   style={{
                     display: "flex",
+                    flexDirection: "column",
                     alignItems: "center",
-                    justifyContent: "space-between",
+                    justifyContent: "center",
                     background: "#fff",
                     borderRadius: 20,
                     boxShadow: "0 4px 24px rgba(0,0,0,0.10)",
-                    padding: "12px 18px 12px 18px",
+                    padding: 0,
+                    aspectRatio: "1 / 1",
+                    minWidth: 0,
+                    width: "100%",
+                    maxWidth: "100%",
                   }}
                 >
-                  <span style={{ fontSize: 16, fontWeight: 700, color: "#222" }}>{word}</span>
-                  <Image src="/apple-photo.png" alt="Apple" width={60} height={60} style={{ objectFit: "contain" }} />
+                  <Image src="/apple-photo.png" alt="Apple" width={90} height={90} style={{ objectFit: "contain", marginTop: 18, marginBottom: 10 }} />
+                  <span style={{ fontSize: 16, fontWeight: 700, color: "#222", marginBottom: 18 }}>{word}</span>
                 </div>
               ))}
             </div>
