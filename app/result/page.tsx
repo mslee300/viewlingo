@@ -1,9 +1,15 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 export default function Result() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [input, setInput] = useState("");
+  const searchParams = useSearchParams();
+  const time = searchParams.get("time") || "0:00";
+  const correct = parseInt(searchParams.get("correct") || "0", 10);
+  const total = 5;
+  const score = Math.round((correct / total) * 100);
 
   // Scroll input into view on focus (for mobile)
   useEffect(() => {
@@ -53,21 +59,21 @@ export default function Result() {
         >
           {/* Time */}
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
-            <span style={{ fontSize: 28, fontWeight: 700, marginBottom: 6 }}>1:03</span>
+            <span style={{ fontSize: 28, fontWeight: 700, marginBottom: 6 }}>{time}</span>
             <span style={{ fontSize: 14, color: "#9D9D9D", fontWeight: 600, display: "flex", alignItems: "center", gap: 3 }}>
               <span role="img" aria-label="clock">⏰</span> Time
             </span>
           </div>
           {/* Correct */}
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
-            <span style={{ fontSize: 28, fontWeight: 700, marginBottom: 6 }}>5</span>
+            <span style={{ fontSize: 28, fontWeight: 700, marginBottom: 6 }}>{correct}</span>
             <span style={{ fontSize: 14, color: "#9D9D9D", fontWeight: 600, display: "flex", alignItems: "center", gap: 3 }}>
               <span role="img" aria-label="check">✅</span> Correct
             </span>
           </div>
           {/* Score */}
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
-            <span style={{ fontSize: 28, fontWeight: 700, marginBottom: 6 }}>100%</span>
+            <span style={{ fontSize: 28, fontWeight: 700, marginBottom: 6 }}>{score}%</span>
             <span style={{ fontSize: 14, color: "#9D9D9D", fontWeight: 600, display: "flex", alignItems: "center", gap: 3 }}>
               <span role="img" aria-label="score">💯</span> Score
             </span>

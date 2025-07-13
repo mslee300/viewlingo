@@ -22,10 +22,18 @@ export default function ReviewCards() {
   const [isSwiping, setIsSwiping] = useState(false);
   const [cardData, setCardData] = useState<WordData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [grading, setGrading] = useState<("correct"|"wrong"|null)[]>(Array(TOTAL_CARDS).fill(null));
+  const [startTime, setStartTime] = useState<number|null>(null);
+  const [borderColor, setBorderColor] = useState<string|null>(null);
   const router = useRouter();
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
   const swipeThreshold = 50;
+
+  // Start timer on mount
+  useEffect(() => {
+    setStartTime(Date.now());
+  }, []);
 
   // Fetch the latest 5 words
   useEffect(() => {
@@ -120,6 +128,7 @@ export default function ReviewCards() {
     touchStartY.current = e.touches[0].clientY;
     setIsSwiping(false);
     setSwipeX(0);
+    setBorderColor(null);
   }
   function handleTouchMove(e: React.TouchEvent) {
     if (touchStartX.current === null) return;
@@ -128,22 +137,58 @@ export default function ReviewCards() {
     if (Math.abs(dx) > Math.abs(dy)) {
       setSwipeX(dx);
       setIsSwiping(true);
+      if (dx < -swipeThreshold) setBorderColor("#FF4D4F"); // red for wrong
+      else if (dx > swipeThreshold) setBorderColor("#4CAF50"); // green for correct
+      else setBorderColor(null);
     }
   }
   function handleTouchEnd(e: React.TouchEvent) {
     if (touchStartX.current === null) return;
     const dx = e.changedTouches[0].clientX - touchStartX.current;
+    let nextGrading = [...grading];
     if (Math.abs(dx) > swipeThreshold) {
       if (dx < 0) {
-        if (cardIdx < TOTAL_CARDS - 1) {
-          setCardIdx(cardIdx + 1);
-          setFlipped(false);
-        } else if (cardIdx === TOTAL_CARDS - 1) {
-          router.push("/result");
-        }
-      } else if (dx > 0 && cardIdx > 0) {
-        setCardIdx(cardIdx - 1);
-        setFlipped(false);
+        // Mark as wrong, red border, do not go to previous card
+        nextGrading[cardIdx] = "wrong";
+        setGrading(nextGrading);
+        setBorderColor("#FF4D4F");
+        setTimeout(() => {
+          setBorderColor(null);
+          if (cardIdx < TOTAL_CARDS - 1) {
+            setCardIdx(cardIdx + 1);
+            setFlipped(false);
+          } else if (cardIdx === TOTAL_CARDS - 1) {
+            // End: calculate time and correct count
+            const endTime = Date.now();
+            const elapsed = Math.floor((endTime - (startTime ?? endTime)) / 1000);
+            const mm = Math.floor(elapsed / 60);
+            const ss = elapsed % 60;
+            const timeStr = `${mm}:${ss.toString().padStart(2, '0')}`;
+            const correct = nextGrading.filter(x => x === "correct").length;
+            router.push(`/result?time=${encodeURIComponent(timeStr)}&correct=${correct}`);
+          }
+        }, 200); // show border color briefly
+      } else if (dx > 0) {
+        // Mark as correct, green border
+        nextGrading[cardIdx] = "correct";
+        setGrading(nextGrading);
+        setBorderColor("#4CAF50");
+        setTimeout(() => {
+          setBorderColor(null);
+          if (cardIdx < TOTAL_CARDS - 1) {
+            setCardIdx(cardIdx + 1);
+            setFlipped(false);
+          } else if (cardIdx === TOTAL_CARDS - 1) {
+            // End: calculate time and correct count
+            const endTime = Date.now();
+            const elapsed = Math.floor((endTime - (startTime ?? endTime)) / 1000);
+            const mm = Math.floor(elapsed / 60);
+            const ss = elapsed % 60;
+            const timeStr = `${mm}:${ss.toString().padStart(2, '0')}`;
+            const correct = nextGrading.filter(x => x === "correct").length;
+            router.push(`/result?time=${encodeURIComponent(timeStr)}&correct=${correct}`);
+          }
+        }, 200);
       }
     }
     setSwipeX(0);
@@ -227,9 +272,10 @@ export default function ReviewCards() {
               borderRadius: 24,
               boxShadow: "0 4px 24px rgba(0,0,0,0.10)",
               background: "#fff",
+              border: borderColor ? `4px solid ${borderColor}` : "none",
               transition: isSwiping
                 ? "none"
-                : "transform 0.7s cubic-bezier(.4,1,.4,1)",
+                : "transform 0.7s cubic-bezier(.4,1,.4,1), border 0.2s cubic-bezier(.4,1,.4,1)",
               transformStyle: "preserve-3d",
               transform:
                 `translateX(${swipeX}px) scale(${isSwiping ? 0.97 : 1}) rotateY(${flipped ? 180 : 0}deg) rotateZ(${isSwiping ? swipeX * 0.05 : 0}deg)` +
