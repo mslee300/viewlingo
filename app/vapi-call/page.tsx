@@ -1,5 +1,7 @@
 "use client";
-import { VapiWidget } from '@vapi-ai/client-sdk-react';
+import dynamic from "next/dynamic";
+
+const VapiWidget = dynamic(() => import("../components/VapiWidget"), { ssr: false });
 
 export default function VapiCallPage() {
   return (
@@ -50,21 +52,6 @@ export default function VapiCallPage() {
         }}
       >
         <VapiWidget
-          mode="voice"
-          theme="dark"
-          baseColor="#000000"
-          accentColor="#14B8A6"
-          buttonBaseColor="#000000"
-          buttonAccentColor="#ffffff"
-          radius="large"
-          size="full"
-          position="bottom-right"
-          mainLabel="TALK WITH AI"
-          startButtonText="Start"
-          endButtonText="End Call"
-          requireConsent={true}
-          localStorageKey="vapi_widget_consent"
-          showTranscript={true}
           publicKey="4d5bf18f-1156-474e-86b7-0e50285bbaa1"
           assistantId="196e5078-aaaa-417e-b240-6c92a5051f5c"
         />
