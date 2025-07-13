@@ -54,7 +54,7 @@ export default function RootLayout({
       >
         <div
           style={{
-            maxWidth: 420,
+            maxWidth: 430,
             margin: '0 auto',
             minHeight: '100vh',
             display: 'flex',
