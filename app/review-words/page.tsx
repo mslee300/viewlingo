@@ -417,7 +417,7 @@ export default function ReviewWords() {
                                 if (!res.ok) throw new Error('TTS failed');
                                 const blob = await res.blob();
                                 await playAudioFromBlob(blob);
-                              } catch (err) {
+                              } catch {
                                 alert('Failed to play audio');
                               } finally {
                                 setPlayingIdx(null);

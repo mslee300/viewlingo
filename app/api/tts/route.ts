@@ -33,8 +33,9 @@ export async function POST(req: NextRequest) {
         'Content-Disposition': 'inline; filename="speech.mp3"',
       },
     });
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error('TTS error:', e);
-    return NextResponse.json({ error: e.message || 'TTS failed' }, { status: 500 });
+    const message = e instanceof Error ? e.message : 'TTS failed';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 } 
