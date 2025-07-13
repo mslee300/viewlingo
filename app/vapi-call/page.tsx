@@ -61,26 +61,6 @@ export default function VapiCallPage() {
           justifyContent: "center",
         }}
       >
-        {/* Vapi Widget Embed */}
-        <vapi-widget
-          mode="voice"
-          theme="dark"
-          base-color="#000000"
-          accent-color="#14B8A6"
-          button-base-color="#000000"
-          button-accent-color="#ffffff"
-          radius="large"
-          size="full"
-          position="bottom-right"
-          main-label="TALK WITH AI"
-          start-button-text="Start"
-          end-button-text="End Call"
-          require-consent="true"
-          local-storage-key="vapi_widget_consent"
-          show-transcript="true"
-          public-key="4d5bf18f-1156-474e-86b7-0e50285bbaa1"
-          assistant-id="196e5078-aaaa-417e-b240-6c92a5051f5c"
-        ></vapi-widget>
       </div>
     </div>
   );
