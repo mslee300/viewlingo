@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useState, useRef, useEffect, useLayoutEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 
@@ -56,7 +56,7 @@ async function playAudioFromBlob(blob: Blob) {
   }
 }
 
-export default function ReviewWords() {
+function ReviewWordsContent() {
   console.log("Component mounted");
   const searchParams = useSearchParams();
   const urlLang = searchParams.get('lang');
@@ -664,5 +664,13 @@ export default function ReviewWords() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ReviewWords() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ReviewWordsContent />
+    </Suspense>
   );
 } 
