@@ -57,7 +57,7 @@ export default function ReviewWords() {
         let allWords: unknown[] = [];
         for (const date of dates) {
           try {
-            const url = `https://5606daadd691.ngrok-free.app/words/full?date=${date}`;
+            const url = `https://surface-walls-handle-rows.trycloudflare.com/words/full?date=${date}`;
             console.log('About to fetch:', url);
             const res = await fetch(url, {
               headers: {

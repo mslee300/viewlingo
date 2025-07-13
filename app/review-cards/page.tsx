@@ -46,7 +46,7 @@ export default function ReviewCards() {
         
         for (const date of dates) {
           try {
-            const url = `https://5606daadd691.ngrok-free.app/words/full?date=${date}`;
+            const url = `https://surface-walls-handle-rows.trycloudflare.com/words/full?date=${date}`;
             const res = await fetch(url, {
               headers: {
                 "ngrok-skip-browser-warning": "true",
