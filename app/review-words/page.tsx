@@ -238,7 +238,16 @@ export default function ReviewWords() {
           </div>
         </div>
         {loading ? (
-          <div style={{ textAlign: "center", margin: 40 }}>Loading...</div>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: '50vh',
+            width: '100%',
+            fontSize: 24,
+            fontWeight: 700,
+            textAlign: 'center',
+          }}>Fetching words...</div>
         ) : wordData.length === 0 ? (
           <div style={{ textAlign: "center", margin: 40 }}>No words found for the last two days.</div>
         ) : (

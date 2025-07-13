@@ -20,7 +20,7 @@ export default function ChooseLanguage() {
 
   function handleClick(name: string) {
     if (name === "Mandarin" || name === "Korean") {
-      router.push("/fetching-words");
+      router.push("/review-words");
     } else {
       setModalOpen(true);
     }
