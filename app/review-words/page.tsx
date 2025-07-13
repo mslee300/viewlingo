@@ -13,13 +13,27 @@ function formatDate(dateStr: string) {
   });
 }
 
+// Restore Language type and languages array
+type Language = { emoji: string; name: string };
+const languages: Language[] = [
+  { emoji: "🇨🇳", name: "Mandarin" },
+  { emoji: "🇰🇷", name: "Korean" },
+  { emoji: "🇪🇸", name: "Spanish" },
+  { emoji: "🇫🇷", name: "French" },
+  { emoji: "🇩🇪", name: "German" },
+  { emoji: "🇯🇵", name: "Japanese" },
+  { emoji: "🇮🇹", name: "Italian" },
+  { emoji: "🇵🇹", name: "Portuguese" },
+];
+
 export default function ReviewWords() {
   console.log("Component mounted");
-  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedLang, setSelectedLang] = useState<Language>(languages[0]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [modalOpen, setModalOpen] = useState(false);
   const [wordData, setWordData] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(true);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -27,16 +41,29 @@ export default function ReviewWords() {
     try {
       async function fetchWords() {
         console.log("fetchWords called");
-        const dates = ['2025-07-12', '2025-07-13']; // Use known dates with data for debugging
+        
+        // Get current date in UTC for API call
+        const now = new Date();
+        const today = new Date(now);
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        const dates = [
+          yesterday.toISOString().split('T')[0], // YYYY-MM-DD format in UTC
+          today.toISOString().split('T')[0]
+        ];
+        
+        console.log('Fetching dates in UTC:', dates);
         let allWords: unknown[] = [];
         for (const date of dates) {
           try {
-            const url = `https://1f62a5b52290.ngrok-free.app/words/full?date=${date}`;
+            const url = `https://5606daadd691.ngrok-free.app/words/full?date=${date}`;
             console.log('About to fetch:', url);
             const res = await fetch(url, {
               headers: {
-                'Accept': 'application/json',
+                "ngrok-skip-browser-warning": "true",
               },
+              mode: 'cors',
             });
             console.log('Fetch completed for:', url);
             const text = await res.text();
@@ -58,10 +85,17 @@ export default function ReviewWords() {
             console.error('Network or fetch error', e);
           }
         }
-        // Group by date (format: 'Jul 13 2025')
+        // Group by date in PDT (format: 'Jul 13 2025')
         const grouped: Record<string, unknown[]> = {};
         (allWords as unknown[]).forEach((word) => {
-          const dateKey = formatDate((word as Record<string, unknown>).timestamp as string);
+          const utcTimestamp = (word as Record<string, unknown>).timestamp as string;
+          
+          // Convert UTC timestamp to PDT
+          const utcDate = new Date(utcTimestamp);
+          const pdtOffset = -7 * 60; // PDT is UTC-7
+          const pdtDate = new Date(utcDate.getTime() + (pdtOffset * 60 * 1000));
+          
+          const dateKey = formatDate(pdtDate.toISOString());
           if (!grouped[dateKey]) grouped[dateKey] = [];
           grouped[dateKey].push(word);
         });
@@ -77,6 +111,7 @@ export default function ReviewWords() {
     }
   }, []);
 
+  // Dropdown close logic (display only)
   useEffect(() => {
     if (!dropdownOpen) return;
     function handleClickOutside(event: MouseEvent) {
@@ -109,6 +144,74 @@ export default function ReviewWords() {
         <div style={{ height: 32 }} />
         <div style={{ textAlign: "center", fontWeight: 600, fontSize: 18, marginBottom: 18 }}>
           Your words
+        </div>
+        {/* Language dropdown display only */}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
+          <div style={{ position: "relative" }} ref={dropdownRef}>
+            <button
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                background: "#fff",
+                border: "none",
+                borderRadius: 9999,
+                boxShadow: "0 2px 12px 0 rgba(0,0,0,0.08)",
+                fontSize: 16,
+                fontWeight: 500,
+                padding: "5px 16px 5px 16px",
+                cursor: "pointer",
+                minWidth: 120,
+              }}
+              onClick={() => setDropdownOpen((v) => !v)}
+            >
+              <span style={{ fontSize: 20 }}>{selectedLang.emoji}</span>
+              <span style={{ fontWeight: 500 }}>{selectedLang.name}</span>
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" style={{ marginLeft: 6 }}><path d="M6 8l4 4 4-4" stroke="#222" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            </button>
+            {dropdownOpen && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "110%",
+                  left: 0,
+                  right: 0,
+                  background: "#fff",
+                  borderRadius: 16,
+                  boxShadow: "0 4px 24px rgba(0,0,0,0.10)",
+                  zIndex: 10,
+                  padding: 4,
+                }}
+              >
+                {languages.map((lang) => (
+                  <button
+                    key={lang.name}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      width: "100%",
+                      background: "none",
+                      border: "none",
+                      borderRadius: 12,
+                      fontSize: 16,
+                      fontWeight: 500,
+                      padding: "10px 16px",
+                      cursor: "pointer",
+                      color: lang.name === selectedLang.name ? "#2193b0" : "#222",
+                    }}
+                    onClick={() => {
+                      setSelectedLang(lang);
+                      setDropdownOpen(false);
+                    }}
+                  >
+                    <span style={{ fontSize: 20 }}>{lang.emoji}</span>
+                    <span>{lang.name}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
         {loading ? (
           <div style={{ textAlign: "center", margin: 40 }}>Loading...</div>
