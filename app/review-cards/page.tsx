@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 const TOTAL_CARDS = 5;
@@ -53,7 +53,7 @@ async function playAudioFromBlob(blob: Blob) {
   }
 }
 
-export default function ReviewCards() {
+function ReviewCardsContent() {
   const [cardIdx, setCardIdx] = useState(0); // 0-based
   const [flipped, setFlipped] = useState(false);
   const [swipeX, setSwipeX] = useState(0);
@@ -506,5 +506,13 @@ export default function ReviewCards() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ReviewCards() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ReviewCardsContent />
+    </Suspense>
   );
 } 
