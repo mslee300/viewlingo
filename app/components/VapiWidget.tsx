@@ -187,7 +187,7 @@ const VapiWidget: React.FC<VapiWidgetProps> = ({
                   flexShrink: 0,
                 }}
               ></div>
-              <span style={{ fontWeight: 'bold', color: '#333', fontSize: 16 }}>
+              <span style={{ fontWeight: 'bold', color: '#000', fontSize: 16 }}>
                 {isSpeaking ? 'Assistant Speaking...' : 'Listening...'}
               </span>
             </div>

@@ -36,7 +36,7 @@ export default function Home() {
         />
         <div
           style={{
-            color: "#111",
+            color: "#000",
             fontWeight: 500,
             fontSize: 50,
             textAlign: "center",

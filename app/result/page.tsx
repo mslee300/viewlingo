@@ -182,21 +182,21 @@ function ResultContent() {
             {/* Time */}
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
               <span style={{ fontSize: 28, fontWeight: 700, marginBottom: 6 }}>{time}</span>
-              <span style={{ fontSize: 14, color: "#9D9D9D", fontWeight: 600, display: "flex", alignItems: "center", gap: 3 }}>
+              <span style={{ fontSize: 14, color: "#666", fontWeight: 600, display: "flex", alignItems: "center", gap: 3 }}>
                 <span role="img" aria-label="clock">⏰</span> Time
               </span>
             </div>
             {/* Correct */}
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
               <span style={{ fontSize: 28, fontWeight: 700, marginBottom: 6 }}>{correct}</span>
-              <span style={{ fontSize: 14, color: "#9D9D9D", fontWeight: 600, display: "flex", alignItems: "center", gap: 3 }}>
+              <span style={{ fontSize: 14, color: "#666", fontWeight: 600, display: "flex", alignItems: "center", gap: 3 }}>
                 <span role="img" aria-label="check">✅</span> Correct
               </span>
             </div>
             {/* Score */}
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
               <span style={{ fontSize: 28, fontWeight: 700, marginBottom: 6 }}>{score}%</span>
-              <span style={{ fontSize: 14, color: "#9D9D9D", fontWeight: 600, display: "flex", alignItems: "center", gap: 3 }}>
+              <span style={{ fontSize: 14, color: "#666", fontWeight: 600, display: "flex", alignItems: "center", gap: 3 }}>
                 <span role="img" aria-label="score">💯</span> Score
               </span>
             </div>
@@ -230,7 +230,7 @@ function ResultContent() {
           <div key={i} style={{ marginBottom: 16 }}>
             {msg.role === 'ai' && (
               <div>
-                <div style={{ fontSize: 14, color: "#9D9D9D", fontWeight: 500, marginBottom: 8 }}>
+                <div style={{ fontSize: 14, color: "#666", fontWeight: 500, marginBottom: 8 }}>
                   AI language coach
                 </div>
                 <div style={{
@@ -299,7 +299,7 @@ function ResultContent() {
                 borderRadius: 9999,
                 padding: "16px 20px",
                 fontSize: 16,
-                color: "#222",
+                color: "#000",
                 outline: "none",
                 fontWeight: 400,
                 boxSizing: "border-box",

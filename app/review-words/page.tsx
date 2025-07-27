@@ -23,14 +23,14 @@ async function playAudioFromBlob(blob: Blob) {
   console.log('🔊 playAudioFromBlob called with blob:', blob);
   console.log('🔊 Blob size:', blob.size, 'bytes');
   console.log('🔊 Blob type:', blob.type);
-  
+
   try {
     const url = URL.createObjectURL(blob);
     console.log('🔊 Created object URL:', url);
-    
+
     const audio = new Audio(url);
     console.log('🔊 Audio element created:', audio);
-    
+
     // Add event listeners for debugging
     audio.addEventListener('loadstart', () => console.log('🔊 Audio loadstart event'));
     audio.addEventListener('loadedmetadata', () => console.log('🔊 Audio loadedmetadata event'));
@@ -40,11 +40,11 @@ async function playAudioFromBlob(blob: Blob) {
     audio.addEventListener('playing', () => console.log('🔊 Audio playing event'));
     audio.addEventListener('error', (e) => console.error('🔊 Audio error event:', e));
     audio.addEventListener('abort', () => console.log('🔊 Audio abort event'));
-    
+
     console.log('🔊 Attempting to play audio...');
     await audio.play();
     console.log('🔊 Audio play() resolved successfully');
-    
+
     // Clean up URL after a delay to ensure audio has loaded
     setTimeout(() => {
       URL.revokeObjectURL(url);
@@ -61,10 +61,10 @@ function ReviewWordsContent() {
   const searchParams = useSearchParams();
   const urlLang = searchParams.get('lang');
   const router = useRouter();
-  
+
   // Set initial language based on URL parameter or default to Mandarin
   const initialLanguage = urlLang ? languages.find(lang => lang.code === urlLang) || languages[0] : languages[0];
-  
+
   const [selectedLang, setSelectedLang] = useState<Language>(initialLanguage);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -73,7 +73,7 @@ function ReviewWordsContent() {
   const [loading, setLoading] = useState(true);
   const [flipped, setFlipped] = useState<Record<string, boolean[]>>({});
   const [newCardIds, setNewCardIds] = useState<Set<string>>(new Set());
-  const [playingIdx, setPlayingIdx] = useState<{date: string, idx: number} | null>(null);
+  const [playingIdx, setPlayingIdx] = useState<{ date: string, idx: number } | null>(null);
 
   useEffect(() => {
     console.log("useEffect running");
@@ -106,6 +106,16 @@ function ReviewWordsContent() {
           try {
             const url = `https://gobbler-working-bluebird.ngrok-free.app/words/by-language?language=${selectedLang.code}&date=${date}`;
             console.log('About to fetch:', url);
+
+            const headers: Record<string, string> = {
+              "ngrok-skip-browser-warning": "true",
+            };
+
+            // Add API token if available (Next.js will inject this at build time)
+            if (process.env.NEXT_PUBLIC_API_TOKEN) {
+              headers["Authorization"] = `Bearer ${process.env.NEXT_PUBLIC_API_TOKEN}`;
+            }
+
             const res = await fetch(url, {
               headers: {
                 "ngrok-skip-browser-warning": "true",
@@ -166,8 +176,8 @@ function ReviewWordsContent() {
             if (a[0] !== "Yesterday" && a[0] !== "Today" && b[0] === "Yesterday") return 1;
             return b[0].localeCompare(a[0]); // For other dates, sort chronologically (newest first)
           })
-          .map(([date, words]) => ({ 
-            date, 
+          .map(([date, words]) => ({
+            date,
             words: (words as unknown[]).sort((a, b) => {
               const aTime = new Date((a as Record<string, unknown>).timestamp as string).getTime();
               const bTime = new Date((b as Record<string, unknown>).timestamp as string).getTime();
@@ -231,7 +241,7 @@ function ReviewWordsContent() {
     >
       <div style={{ width: "100%", maxWidth: 420, margin: "0 auto", padding: "0 24px" }}>
         <div style={{ height: 32 }} />
-        <div style={{ textAlign: "center", fontWeight: 600, fontSize: 18, marginBottom: 18 }}>
+        <div style={{ textAlign: "center", fontWeight: 600, fontSize: 18, marginBottom: 18, color: "#000" }}>
           Your words
         </div>
         {/* Language dropdown display only */}
@@ -255,8 +265,8 @@ function ReviewWordsContent() {
               onClick={() => setDropdownOpen((v) => !v)}
             >
               <span style={{ fontSize: 20 }}>{selectedLang.emoji}</span>
-              <span style={{ fontWeight: 500 }}>{selectedLang.name}</span>
-              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" style={{ marginLeft: 6 }}><path d="M6 8l4 4 4-4" stroke="#222" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              <span style={{ fontWeight: 500, color: "#000" }}>{selectedLang.name}</span>
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" style={{ marginLeft: 6 }}><path d="M6 8l4 4 4-4" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
             </button>
             {dropdownOpen && (
               <div
@@ -287,7 +297,7 @@ function ReviewWordsContent() {
                       fontWeight: 500,
                       padding: "10px 16px",
                       cursor: "pointer",
-                      color: lang.name === selectedLang.name ? "#2193b0" : "#222",
+                      color: lang.name === selectedLang.name ? "#2193b0" : "#000",
                     }}
                     onClick={() => {
                       if (lang.name === "Mandarin" || lang.name === "Korean") {
@@ -317,13 +327,14 @@ function ReviewWordsContent() {
             fontSize: 24,
             fontWeight: 700,
             textAlign: 'center',
+            color: '#000',
           }}>Getting {selectedLang.name} words...</div>
         ) : wordData.length === 0 ? (
-          <div style={{ textAlign: "center", margin: 40 }}>No {selectedLang.name} words found for the selected dates.</div>
+          <div style={{ textAlign: "center", margin: 40, color: "#000" }}>No {selectedLang.name} words found for the selected dates.</div>
         ) : (
           (wordData as { date: string; words: unknown[] }[]).map((section) => (
             <div key={section.date} style={{ marginBottom: 50 }}>
-              <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 32 }}>{section.date}</div>
+              <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 32, color: "#000" }}>{section.date}</div>
               <div
                 style={{
                   display: "grid",
@@ -405,7 +416,7 @@ function ReviewWordsContent() {
                             style={{
                               fontSize: (typeof w.word === 'string' && w.word.length > 12) ? 16 : 24,
                               fontWeight: 700,
-                              color: "#222",
+                              color: "#000",
                               marginBottom: 18
                             }}
                           >
@@ -433,7 +444,7 @@ function ReviewWordsContent() {
                             style={{
                               fontSize: (typeof w.translation === 'string' && w.translation.length > 6) ? 16 : 24,
                               fontWeight: 700,
-                              color: "#222",
+                              color: "#000",
                               marginBottom: 8
                             }}
                           >
@@ -443,7 +454,7 @@ function ReviewWordsContent() {
                             style={{
                               fontSize: (typeof w.anglosax === 'string' && w.anglosax.length > 12) ? 14 : 20,
                               fontWeight: 400,
-                              color: "#9D9D9D",
+                              color: "#666",
                               marginBottom: 18
                             }}
                           >
@@ -470,41 +481,41 @@ function ReviewWordsContent() {
                               console.log('🎵 TTS button clicked');
                               console.log('🎵 Word data:', w);
                               console.log('🎵 Translation text:', w.translation);
-                              
+
                               if (isPlaying) {
                                 console.log('🎵 Already playing, ignoring click');
                                 return;
                               }
-                              
+
                               setPlayingIdx({ date: section.date, idx });
                               console.log('🎵 Set playing state for:', section.date, 'index:', idx);
-                              
+
                               try {
                                 console.log('🎵 Making TTS API request...');
                                 const requestBody = { text: w.translation };
                                 console.log('🎵 Request body:', requestBody);
-                                
+
                                 const res = await fetch('/api/tts', {
                                   method: 'POST',
                                   headers: { 'Content-Type': 'application/json' },
                                   body: JSON.stringify(requestBody),
                                 });
-                                
+
                                 console.log('🎵 TTS API response status:', res.status);
                                 console.log('🎵 TTS API response headers:', Object.fromEntries(res.headers.entries()));
-                                
+
                                 if (!res.ok) {
                                   const errorText = await res.text();
                                   console.error('🎵 TTS API error response:', errorText);
                                   throw new Error(`TTS failed with status ${res.status}: ${errorText}`);
                                 }
-                                
+
                                 console.log('🎵 TTS API request successful, getting blob...');
                                 const blob = await res.blob();
                                 console.log('🎵 Received blob from TTS API:', blob);
                                 console.log('🎵 Blob size:', blob.size, 'bytes');
                                 console.log('🎵 Blob type:', blob.type);
-                                
+
                                 console.log('🎵 Calling playAudioFromBlob...');
                                 await playAudioFromBlob(blob);
                                 console.log('🎵 Audio playback completed successfully');
@@ -561,7 +572,7 @@ function ReviewWordsContent() {
               boxShadow: "0 4px 24px rgba(0,0,0,0.10)",
               fontSize: 18,
               fontWeight: 500,
-              color: "#222",
+              color: "#000",
               textAlign: "center",
               maxWidth: 300,
             }}
@@ -586,7 +597,7 @@ function ReviewWordsContent() {
                     fontWeight: 500,
                     padding: "12px 16px",
                     cursor: "pointer",
-                    color: "#222",
+                    color: "#000",
                     transition: "all 0.2s",
                   }}
                   onClick={() => {
@@ -658,7 +669,7 @@ function ReviewWordsContent() {
               justifyContent: "center",
               gap: 8,
               background: "#fff",
-              color: "#222",
+              color: "#000",
               border: "none",
               borderRadius: 24,
               boxShadow: "0 2px 12px 0 rgba(0,0,0,0.10)",

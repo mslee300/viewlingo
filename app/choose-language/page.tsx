@@ -61,9 +61,10 @@ export default function ChooseLanguage() {
             fontWeight: 600,
             marginBottom: 50,
             lineHeight: 1.2,
+            color: "#000",
           }}
         >
-          Which language<br />you want to learn?
+          Which language do<br />you want to learn?
         </h1>
         <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
           {languages.map((lang) => (
@@ -77,7 +78,7 @@ export default function ChooseLanguage() {
                 padding: "18px 20px",
                 fontSize: 18,
                 fontWeight: 500,
-                color: "#444",
+                color: "#000",
                 display: "flex",
                 alignItems: "center",
                 gap: 14,
@@ -118,7 +119,7 @@ export default function ChooseLanguage() {
               boxShadow: "0 4px 24px rgba(0,0,0,0.10)",
               fontSize: 18,
               fontWeight: 500,
-              color: "#222",
+              color: "#000",
               textAlign: "center",
             }}
             onClick={e => e.stopPropagation()}

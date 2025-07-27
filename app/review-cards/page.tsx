@@ -20,14 +20,14 @@ async function playAudioFromBlob(blob: Blob) {
   console.log('🔊 playAudioFromBlob called with blob:', blob);
   console.log('🔊 Blob size:', blob.size, 'bytes');
   console.log('🔊 Blob type:', blob.type);
-  
+
   try {
     const url = URL.createObjectURL(blob);
     console.log('🔊 Created object URL:', url);
-    
+
     const audio = new Audio(url);
     console.log('🔊 Audio element created:', audio);
-    
+
     // Add event listeners for debugging
     audio.addEventListener('loadstart', () => console.log('🔊 Audio loadstart event'));
     audio.addEventListener('loadedmetadata', () => console.log('🔊 Audio loadedmetadata event'));
@@ -37,11 +37,11 @@ async function playAudioFromBlob(blob: Blob) {
     audio.addEventListener('playing', () => console.log('🔊 Audio playing event'));
     audio.addEventListener('error', (e) => console.error('🔊 Audio error event:', e));
     audio.addEventListener('abort', () => console.log('🔊 Audio abort event'));
-    
+
     console.log('🔊 Attempting to play audio...');
     await audio.play();
     console.log('🔊 Audio play() resolved successfully');
-    
+
     // Clean up URL after a delay to ensure audio has loaded
     setTimeout(() => {
       URL.revokeObjectURL(url);
@@ -60,9 +60,9 @@ function ReviewCardsContent() {
   const [isSwiping, setIsSwiping] = useState(false);
   const [cardData, setCardData] = useState<WordData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [grading, setGrading] = useState<("correct"|"wrong"|null)[]>(Array(TOTAL_CARDS).fill(null));
-  const [startTime, setStartTime] = useState<number|null>(null);
-  const [borderColor, setBorderColor] = useState<string|null>(null);
+  const [grading, setGrading] = useState<("correct" | "wrong" | null)[]>(Array(TOTAL_CARDS).fill(null));
+  const [startTime, setStartTime] = useState<number | null>(null);
+  const [borderColor, setBorderColor] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -80,7 +80,7 @@ function ReviewCardsContent() {
     async function fetchLatestWords() {
       try {
         console.log('🃏 Starting to fetch words for review cards...');
-        
+
         // Get language from URL parameters, default to 'ko' if not specified
         const language = searchParams.get('language') || 'ko';
         console.log('🃏 Using language from URL:', language);
@@ -95,24 +95,31 @@ function ReviewCardsContent() {
         console.log('🃏 PDT Yesterday:', yesterday);
         console.log('🃏 Fetching dates:', dates);
         console.log('🃏 Fetching language:', language);
-        
+
         let allWords: WordData[] = [];
-        
+
         // Fetch from the selected language and both dates
         for (const date of dates) {
           try {
             const url = `https://gobbler-working-bluebird.ngrok-free.app/words/by-language?language=${language}&date=${date}`;
             console.log('🃏 Fetching from:', url);
-            
+
+            const headers: Record<string, string> = {
+              "ngrok-skip-browser-warning": "true",
+            };
+
+            // Add API token if available (Next.js will inject this at build time)
+            if (process.env.NEXT_PUBLIC_API_TOKEN) {
+              headers["Authorization"] = `Bearer ${process.env.NEXT_PUBLIC_API_TOKEN}`;
+            }
+
             const res = await fetch(url, {
-              headers: {
-                "ngrok-skip-browser-warning": "true",
-              },
+              headers,
               mode: 'cors',
             });
-            
+
             console.log('🃏 Response status for', language, date, ':', res.status);
-            
+
             if (res.ok) {
               const data = await res.json();
               console.log('🃏 Fetched', data.length, 'words for', language, date);
@@ -124,17 +131,17 @@ function ReviewCardsContent() {
             console.error('🃏 Network or fetch error for', language, date, ':', e);
           }
         }
-        
+
         console.log('🃏 Total words fetched:', allWords.length);
-        
+
         // Sort by timestamp (latest first) and take the latest 5
         const sortedWords = allWords
           .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
           .slice(0, TOTAL_CARDS);
-        
+
         console.log('🃏 Selected', sortedWords.length, 'words for review cards');
         console.log('🃏 Selected words:', sortedWords.map(w => ({ word: w.word, language: w.language, timestamp: w.timestamp })));
-        
+
         setCardData(sortedWords);
         setLoading(false);
       } catch (err) {
@@ -142,7 +149,7 @@ function ReviewCardsContent() {
         setLoading(false);
       }
     }
-    
+
     fetchLatestWords();
   }, [searchParams]);
 
@@ -390,14 +397,14 @@ function ReviewCardsContent() {
                 transition: "opacity 0.3s, filter 0.3s",
               }}
             >
-              <Image 
-                src={`data:image/png;base64,${card.picture}`} 
-                alt={card.word} 
-                width={150} 
-                height={150} 
-                style={{ objectFit: "contain", marginTop: 32, marginBottom: 24 }} 
+              <Image
+                src={`data:image/png;base64,${card.picture}`}
+                alt={card.word}
+                width={150}
+                height={150}
+                style={{ objectFit: "contain", marginTop: 32, marginBottom: 24 }}
               />
-              <span style={{ fontSize: 28, fontWeight: 700, color: "#111", marginBottom: 32 }}>{card.word}</span>
+              <span style={{ fontSize: 28, fontWeight: 700, color: "#000", marginBottom: 32 }}>{card.word}</span>
             </div>
             {/* Back (Answer) */}
             <div
@@ -419,15 +426,15 @@ function ReviewCardsContent() {
                 transition: "opacity 0.3s, filter 0.3s",
               }}
             >
-              <Image 
-                src={`data:image/png;base64,${card.picture}`} 
-                alt={card.word} 
-                width={150} 
-                height={150} 
-                style={{ objectFit: "contain", marginTop: 32, marginBottom: 18 }} 
+              <Image
+                src={`data:image/png;base64,${card.picture}`}
+                alt={card.word}
+                width={150}
+                height={150}
+                style={{ objectFit: "contain", marginTop: 32, marginBottom: 18 }}
               />
-              <span style={{ fontSize: 28, fontWeight: 700, color: "#111", marginBottom: 6 }}>{card.translation}</span>
-              <span style={{ fontSize: 20, fontWeight: 400, color: "#9D9D9D", marginBottom: 24, letterSpacing: 0.2 }}>{card.anglosax}</span>
+              <span style={{ fontSize: 28, fontWeight: 700, color: "#000", marginBottom: 6 }}>{card.translation}</span>
+              <span style={{ fontSize: 20, fontWeight: 400, color: "#666", marginBottom: 24, letterSpacing: 0.2 }}>{card.anglosax}</span>
               <button
                 style={{
                   display: "flex",
@@ -449,41 +456,41 @@ function ReviewCardsContent() {
                   console.log('🎵 TTS button clicked in review cards');
                   console.log('🎵 Card data:', card);
                   console.log('🎵 Translation text:', card.translation);
-                  
+
                   if (isPlaying) {
                     console.log('🎵 Already playing, ignoring click');
                     return;
                   }
-                  
+
                   setIsPlaying(true);
                   console.log('🎵 Set playing state to true');
-                  
+
                   try {
                     console.log('🎵 Making TTS API request...');
                     const requestBody = { text: card.translation };
                     console.log('🎵 Request body:', requestBody);
-                    
+
                     const res = await fetch('/api/tts', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify(requestBody),
                     });
-                    
+
                     console.log('🎵 TTS API response status:', res.status);
                     console.log('🎵 TTS API response headers:', Object.fromEntries(res.headers.entries()));
-                    
+
                     if (!res.ok) {
                       const errorText = await res.text();
                       console.error('🎵 TTS API error response:', errorText);
                       throw new Error(`TTS failed with status ${res.status}: ${errorText}`);
                     }
-                    
+
                     console.log('🎵 TTS API request successful, getting blob...');
                     const blob = await res.blob();
                     console.log('🎵 Received blob from TTS API:', blob);
                     console.log('🎵 Blob size:', blob.size, 'bytes');
                     console.log('🎵 Blob type:', blob.type);
-                    
+
                     console.log('🎵 Calling playAudioFromBlob...');
                     await playAudioFromBlob(blob);
                     console.log('🎵 Audio playback completed successfully');
