@@ -82,14 +82,14 @@ function ReviewWordsContent() {
         console.log("fetchWords called");
         
         // Use fixed dates as specified
-        const dates = ['2025-07-12', '2025-07-13'];
+        const dates = ['2025-07-25', '2025-07-26'];
         
         console.log('Fetching dates:', dates);
         console.log('Selected language:', selectedLang.code);
         let allWords: unknown[] = [];
         for (const date of dates) {
           try {
-            const url = `https://surface-walls-handle-rows.trycloudflare.com/words/by-language?language=${selectedLang.code}&date=${date}`;
+            const url = `https://gobbler-working-bluebird.ngrok-free.app/words/by-language?language=${selectedLang.code}&date=${date}`;
             console.log('About to fetch:', url);
             const res = await fetch(url, {
               headers: {
