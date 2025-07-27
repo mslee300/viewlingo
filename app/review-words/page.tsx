@@ -104,7 +104,7 @@ function ReviewWordsContent() {
         let allWords: unknown[] = [];
         for (const date of dates) {
           try {
-            const url = `https://gobbler-working-bluebird.ngrok-free.app/words/by-language?language=${selectedLang.code}&date=${date}`;
+            const url = `https://gobbler-working-bluebird.ngrok-free.app/api/words/by-language?language=${selectedLang.code}&date=${date}`;
             console.log('About to fetch:', url);
 
             const headers: Record<string, string> = {
