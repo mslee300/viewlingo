@@ -81,11 +81,26 @@ function ReviewWordsContent() {
       async function fetchWords() {
         console.log("fetchWords called");
         
-        // Use fixed dates as specified
-        const dates = ['2025-07-25', '2025-07-26'];
+        // Calculate today and yesterday in PDT (UTC-7)
+        const now = new Date();
+        const pdtOffset = -7 * 60; // PDT is UTC-7, offset in minutes
+        const nowPDT = new Date(now.getTime() + (pdtOffset - now.getTimezoneOffset()) * 60 * 1000);
         
-        console.log('Fetching dates:', dates);
+        const todayPDT = new Date(nowPDT);
+        todayPDT.setHours(0, 0, 0, 0);
+        
+        const yesterdayPDT = new Date(todayPDT);
+        yesterdayPDT.setDate(yesterdayPDT.getDate() - 1);
+        
+        // Format dates for API (YYYY-MM-DD)
+        const todayStr = todayPDT.toISOString().split('T')[0];
+        const yesterdayStr = yesterdayPDT.toISOString().split('T')[0];
+        const dates = [todayStr, yesterdayStr];
+        
+        console.log('PDT Today:', todayStr);
+        console.log('PDT Yesterday:', yesterdayStr);
         console.log('Selected language:', selectedLang.code);
+        
         let allWords: unknown[] = [];
         for (const date of dates) {
           try {
@@ -117,22 +132,39 @@ function ReviewWordsContent() {
             console.error('Network or fetch error', e);
           }
         }
-        // Group by date
+        
+        // Group by date using PDT timezone
         const grouped: Record<string, unknown[]> = {};
         (allWords as unknown[]).forEach((word) => {
           const utcTimestamp = (word as Record<string, unknown>).timestamp as string;
           const wordTime = new Date(utcTimestamp);
-          const dateKey = wordTime.toISOString().split('T')[0] === '2025-07-13' ? "Today" : "Yesterday";
+          
+          // Convert to PDT
+          const wordTimePDT = new Date(wordTime.getTime() + (pdtOffset - wordTime.getTimezoneOffset()) * 60 * 1000);
+          const wordDateStr = wordTimePDT.toISOString().split('T')[0];
+          
+          let dateKey: string;
+          if (wordDateStr === todayStr) {
+            dateKey = "Today";
+          } else if (wordDateStr === yesterdayStr) {
+            dateKey = "Yesterday";
+          } else {
+            // For any other dates, use the actual date
+            dateKey = wordDateStr;
+          }
           
           if (!grouped[dateKey]) grouped[dateKey] = [];
           grouped[dateKey].push(word);
         });
+        
         const sorted = Object.entries(grouped)
           .sort((a, b) => {
-            // "Today" should come before "Yesterday"
-            if (a[0] === "Today" && b[0] === "Yesterday") return -1;
-            if (a[0] === "Yesterday" && b[0] === "Today") return 1;
-            return 0;
+            // "Today" should come before "Yesterday", then other dates chronologically
+            if (a[0] === "Today" && b[0] !== "Today") return -1;
+            if (a[0] !== "Today" && b[0] === "Today") return 1;
+            if (a[0] === "Yesterday" && b[0] !== "Yesterday" && b[0] !== "Today") return -1;
+            if (a[0] !== "Yesterday" && a[0] !== "Today" && b[0] === "Yesterday") return 1;
+            return b[0].localeCompare(a[0]); // For other dates, sort chronologically (newest first)
           })
           .map(([date, words]) => ({ 
             date, 

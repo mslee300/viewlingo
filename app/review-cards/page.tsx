@@ -85,9 +85,14 @@ function ReviewCardsContent() {
         const language = searchParams.get('language') || 'ko';
         console.log('🃏 Using language from URL:', language);
         
-        // Use fixed dates as specified
-        const dates = ['2025-07-12', '2025-07-13'];
+        // Calculate today and yesterday in PDT timezone
+        const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' });
+        const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' });
         
+        const dates = [today, yesterday];
+        
+        console.log('🃏 PDT Today:', today);
+        console.log('🃏 PDT Yesterday:', yesterday);
         console.log('🃏 Fetching dates:', dates);
         console.log('🃏 Fetching language:', language);
         
@@ -96,7 +101,7 @@ function ReviewCardsContent() {
         // Fetch from the selected language and both dates
         for (const date of dates) {
           try {
-            const url = `https://surface-walls-handle-rows.trycloudflare.com/words/by-language?language=${language}&date=${date}`;
+            const url = `https://gobbler-working-bluebird.ngrok-free.app/words/by-language?language=${language}&date=${date}`;
             console.log('🃏 Fetching from:', url);
             
             const res = await fetch(url, {
