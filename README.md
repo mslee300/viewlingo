@@ -14,68 +14,40 @@ Viewlingo closes the gap between learning a language and living it. Our platform
 - [**`️👀 Visual Flashcards`**](#feature1) : Create flashcards directly from real-life photos.
 - [**`🕒 Test Mode`**](#feature2) : Instantly generate quizzes from flashcard sets with Quizlet interface.
 - [**`📝 Review Chat`**](#feature3) : Receive personalized AI-driven feedback and answers based on your quiz results.
-- [**`📈 Call with AI`**](#feature4) : Engage in interactive voice calls with an advanced AI agent tailored to your learning needs.
+- [**`📲 Call with AI`**](#feature4) : Engage in interactive voice calls with an advanced AI agent tailored to your learning needs.
 
-<h3 id="feature1">Speed Game</h3>
-Race to solve 9 TOEIC questions faster than your opponent!
+<h3 id="feature1">👀 Visual Flashcards</h3>
+Create flashcards directly from real-life photos.
 <br />
 <p>
-  <img width="300" src="https://github.com/user-attachments/assets/5cf665e9-6e12-42dd-a331-50bf0b13c1ca" />
+  <img width="300" src="https://github.com/user-attachments/assets/80e32ac9-4dff-42c4-83b7-b1c6c0996f4e" />
 </p>
 
-<h3 id="feature2">Countdown Game</h3>
-Answer more TOEIC questions than your opponent in just 60 seconds!
+<h3 id="feature2">🕒 Test Mode</h3>
+Instantly generate quizzes from flashcard sets with Quizlet interface.
 <br />
 <p>
-  <img width="300" src="https://github.com/user-attachments/assets/f5c4047c-9699-468e-b630-4f61781dbb36" />
+  <img width="300" src="https://github.com/user-attachments/assets/4d776b7f-1a82-4312-89f6-fb27c157eec2" />
 </p>
 
-<h3 id="feature3">Review Section</h3>
-Allows users to revisit and correct mistakes, providing targeted practice to reinforce learning.
+<h3 id="feature3">📝 Review Chat</h3>
+Receive personalized AI-driven feedback and answers based on your quiz results.
 <br />
 <p>
-  <img width="300" src="https://github.com/user-attachments/assets/5c1b9a27-9907-432b-b3a3-3680c840730d" />
+  <img width="300" src="https://github.com/user-attachments/assets/bd541786-f59b-45e0-87ee-814a519dc8d3" />
 </p>
 
-<h3 id="feature4">Progress Dashboard</h3>
-Check your learning progress in just 5 seconds!
+<h3 id="feature4">📲 Call with AI</h3>
+Engage in interactive voice calls with an advanced AI agent tailored to your learning 
 <br />
 <p>
-  <img width="300" src="https://github.com/user-attachments/assets/a87d822f-971a-48ec-a85d-90edddb69487" />
+  <img width="300" src="https://github.com/user-attachments/assets/a79fe7cf-ac6c-46a9-82ab-d8573c0f15af" />
 </p>
 
-## ⚡️ Quick start
-
-### Backend
-
-Navigate to the backend directory, create a virtual environment, and install the dependencies:
-
-```bash
-cd backend
-python3 -m venv env
-source env/bin/activate
-pip install -r requirements.txt
-```
-
-Run the backend server:
-
-```bash
-python manage.py runserver
-```
-
-### Frontend
-
-Navigate to the frontend directory, install dependencies, and run the frontend:
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
 
 ## 🧱 Architecture
 
-<img alt="Jammini logo" src="https://github.com/user-attachments/assets/f6883d4a-af4b-4eb8-b3d8-2f9f596cb572">
+<img alt="Viewlingo logo" src="https://github.com/user-attachments/assets/cdc7cfc9-418f-4bc6-a927-914ce51b4a03">
 
 <br />
 <br />
