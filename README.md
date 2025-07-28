@@ -10,7 +10,7 @@ Viewlingo closes the gap between learning a language and living it. Our platform
 ## 📺 Demo
 
 <div align="center">
-  <video src="https://github.com/user-attachments/assets/c0792424-5a87-4bf1-ab77-4f40b18b1fc0" />
+  <video src="https://github.com/user-attachments/assets/d73c9849-d856-41dc-9184-1de5f555b65a" />
 </div>
 
 ## 🍽️ Features
