@@ -7,6 +7,12 @@
 Viewlingo closes the gap between learning a language and living it. Our platform uses MentraOS to let you instantly learn translations of objects in your surroundings, powered by visual and language AI. Every word you learn is saved to your account on our website, giving you access to flashcards and quizzes personalized to the words you've encountered. On our website, you can also talk to a chatbot or phone call agent that has context of your learned vocabulary, letting you practice with real feedback. This creates an immersive language experience that teaches you actually useful vocabulary with minimal effort. Learning a language has never been easier.
 </p>
 
+## 📺 Demo
+
+<div align="center">
+  <video src="https://github.com/user-attachments/assets/c0792424-5a87-4bf1-ab77-4f40b18b1fc0" />
+</div>
+
 ## 🍽️ Features
 
 **3 Main Features are**:
